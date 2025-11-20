@@ -1,7 +1,8 @@
-import express from "express";
 import cors from "cors";
-import mongoose from "mongoose";
 import dotenv from "dotenv";
+import express from "express";
+import mongoose from "mongoose";
+import userRoutes from "./routes/userRoutes.js";
 
 dotenv.config();
 
@@ -14,9 +15,21 @@ app.get("/", (req, res) => {
     res.send("API running...");
 });
 
+// mount routes
+app.use("/api/users", userRoutes);
+
 // connect to MongoDB
-mongoose.connect(process.env.MONGO_URI)
+// prefer IPv4 loopback to avoid IPv6 (::1) resolution issues on some setups
+const mongoUri = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/meraki_db';
+console.log('Using Mongo URI:', mongoUri);
+
+mongoose.connect(mongoUri)
     .then(() => console.log("MongoDB connected"))
-    .catch(err => console.log(err));
+    .catch(err => console.log("MongoDB connection error:", err.message));
+
+// connection event logging
+mongoose.connection.on('connected', () => console.log('Mongoose connected to', mongoUri));
+mongoose.connection.on('error', (err) => console.error('Mongoose connection error:', err));
+mongoose.connection.on('disconnected', () => console.log('Mongoose disconnected'));
 
 app.listen(5000, () => console.log("Server running on port 5000"));
