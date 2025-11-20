@@ -1,0 +1,54 @@
+.page{
+  min-height:100vh;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:40px;
+  padding:40px;
+  box-sizing:border-box;
+}
+.left{ flex:0 0 420px; }
+.brand{ display:flex; align-items:baseline; gap:12px; margin-bottom:18px }
+.brand h1{ font-size:48px; margin:0; font-family: 'Helvetica Neue', Arial, sans-serif }
+.brand .sub{ color:#6b7280; margin:0 0 0 4px }
+
+.card{
+  margin-left: 0px;
+  background: #fff;
+  border-radius:8px;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+  overflow:hidden;
+}
+
+.card form{ background:#2f79c1; padding:26px 26px 18px; border-top-left-radius:8px; border-top-right-radius:8px }
+.card input{ display:block; width:100%; padding:14px 16px; margin-bottom:12px; border-radius:8px; border: none; font-size:14px }
+.card .row{ display:flex; gap:12px }
+.card .row input{ flex:1 }
+.fileLabel{ display:block; font-size:13px; color:#fff; margin-top:8px }
+.card input::placeholder{ color:#9aaec9 }
+.card .forgot{ display:block; color:#a7c6ea; font-size:13px; margin-bottom:12px; text-decoration:none }
+.card .primary{ display:block; width:100%; background: linear-gradient(180deg,#19a1ff,#0b8ef9); color:white; border:none; padding:12px; border-radius:28px; font-weight:700; margin-top:6px }
+
+.or{ text-align:center; padding:14px 18px; color:#9aaec9; background:#fff }
+
+.socials{ background:#fff; padding:18px; display:flex; flex-direction:column; gap:12px }
+.social{ display:flex; align-items:center; gap:10px; padding:10px 14px; border-radius:28px; border:2px solid #dbeefa; background:#fff; font-weight:600 }
+.social .icon{ display:inline-flex; width:34px; height:34px; border-radius:50%; align-items:center; justify-content:center; background:#eef6ff }
+.social.fb .icon{ color:#3b5998 }
+.social.google .icon{ color:#ea4335 }
+
+.signup{ text-align:center; padding:12px 0 18px; color:#7b8798; font-size:14px }
+.signup a{ color:#0b84f0; text-decoration:none }
+
+.small{ margin-top:14px; color:#9aaec9; font-size:12px }
+
+.right{ flex:1 1 60%; display:flex; align-items:center; justify-content:center }
+.art-wrap{ transform: rotate(-12deg); max-width:520px; width:80%; }
+.art{ width:100%; display:block; filter: drop-shadow(0 6px 12px rgba(0,0,0,0.06)); }
+
+@media (max-width:900px){
+  .page{ flex-direction:column; align-items:stretch }
+  .right{ order:2 }
+  .left{ order:1; margin-bottom:20px }
+  .art-wrap{ transform:none; width:100% }
+}

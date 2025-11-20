@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+  <head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Sign Up — Meraki</title>
+  <link rel="stylesheet" href="signup.css">
+  </head>
+<body>
+  <div class="page">
+    <div class="left">
+      <div class="brand">
+        <h1>Sign Up</h1>
+        <p class="sub">Welcome to Meraki!</p>
+      </div>
+
+      <div class="card">
+        <form id="signupForm">
+          <input name="user_email_address" placeholder="Email Address" required />
+
+          <div class="row">
+            <input name="first_name" placeholder="First Name" required />
+            <input name="last_name" placeholder="Last Name" required />
+          </div>
+
+          <div class="row">
+            <input name="password" type="password" placeholder="Password" required />
+            <input name="confirmPassword" type="password" placeholder="Confirm Password" required />
+          </div>
+
+          <button class="primary" type="submit">Sign Up</button>
+        </form>
+
+        <div class="or">or</div>
+
+        <div class="socials">
+          <button class="social fb">
+            <span class="icon">f</span>
+            <span>Facebook</span>
+          </button>
+          <button class="social google">
+            <span class="icon">G</span>
+            <span>Google</span>
+          </button>
+        </div>
+
+        <div class="signup">Already a member? <a href="login.html">Login</a></div>
+      </div>
+
+      <footer class="small">Terms of Service &nbsp; Privacy Policy &nbsp; Cookie Policy</footer>
+    </div>
+
+    <div class="right">
+      <!-- Replace the placeholder image with your artwork/logo -->
+      <div class="art-wrap">
+        <img src="/placeholder-art.png" alt="Meraki art placeholder" class="art" />
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Signup form handler: validates password match and posts JSON to backend
+    document.getElementById('signupForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const f = e.target;
+      const pw = f.password.value;
+      const pw2 = f.confirmPassword.value;
+      if (pw !== pw2) {
+        alert('Passwords do not match');
+        return;
+      }
+
+      const body = {
+        user_username: f.user_username.value || `${f.first_name.value} ${f.last_name.value}`,
+        user_email_address: f.user_email_address.value,
+        user_password: pw,
+        user_role: 'Artist',
+        user_bios: f.user_bios.value || '',
+        user_social_links: f.user_social_links.value || '',
+        user_profile_picture: ''
+      };
+
+      try {
+        const res = await fetch('http://localhost:5000/api/users', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body)
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.message || JSON.stringify(data));
+        alert('Created: ' + JSON.stringify(data));
+      } catch (err) {
+        alert('Error: ' + err.message);
+      }
+    });
+  </script>
+</body>
+</html>
