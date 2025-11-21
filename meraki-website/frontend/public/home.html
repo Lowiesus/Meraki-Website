@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Meraki — Home</title>
+  <link rel="stylesheet" href="home.css">
+</head>
+<body>
+  <div class="app">
+    <aside class="left-nav">
+      <div class="brand">
+        <img src="logo192.png" alt="Meraki" />
+      </div>
+      <nav>
+        <a class="nav-item active">Home</a>
+        <a class="nav-item">Comms Status</a>
+        <a class="nav-item">Notifications</a>
+        <a class="nav-item">Messages</a>
+        <a class="nav-item">Shopping Cart</a>
+        <a class="nav-item">Payments & Orders</a>
+        <a class="nav-item">Profile</a>
+        <a class="nav-item">More</a>
+      </nav>
+      <button class="create-post">Create Post</button>
+    </aside>
+
+    <main class="feed">
+      <section class="composer">
+        <div class="composer-header">
+          <img id="avatar" class="avatar" src="logo192.png" alt="avatar">
+          <textarea id="composerText" placeholder="What's happening?" rows="2"></textarea>
+        </div>
+        <div class="composer-actions">
+          <div class="icons">📷 GIF 🙂 🔗</div>
+          <button class="post-btn">Post</button>
+        </div>
+      </section>
+
+      <section class="posts">
+        <div class="empty">Your feed is empty — start by creating a post or following people.</div>
+      </section>
+    </main>
+
+    <aside class="right-side">
+      <div class="search"><input placeholder="Search Meraki" /></div>
+      <div class="card small">
+        <h4>What's happening</h4>
+        <ul class="trending">
+          <li>Patron of the Arts: Halloween</li>
+          <li>PrintCon</li>
+          <li>Global Game Jam</li>
+        </ul>
+      </div>
+      <div class="card small">
+        <h4>Who to follow</h4>
+        <div class="follow">Bessie Cooper <button>Follow</button></div>
+        <div class="follow">Jenny Wilson <button>Follow</button></div>
+      </div>
+    </aside>
+  </div>
+
+  <script>
+    // Ensure user is authenticated, otherwise redirect
+    const token = localStorage.getItem('token');
+    const userId = localStorage.getItem('userId');
+    if (!token || !userId) {
+      window.location.href = 'login.html';
+    } else {
+      // fetch user profile to show avatar/username
+      fetch(`http://localhost:5000/api/users/${userId}`, { headers: { 'Authorization': `Bearer ${token}` } })
+        .then(r => r.json())
+        .then(data => {
+          if (data && data.user_profile_picture) {
+            document.getElementById('avatar').src = data.user_profile_picture;
+          }
+        }).catch(err => console.warn('Profile fetch failed', err));
+    }
+  </script>
+</body>
+</html>
