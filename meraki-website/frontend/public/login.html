@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Login — Meraki</title>
+  <link rel="stylesheet" href="login.css">
+</head>
+<body>
+  <div class="page">
+    <div class="left">
+      <div class="brand">
+        <h1>Login</h1>
+        <p class="sub">Welcome Back!</p>
+      </div>
+
+      <div class="card">
+        <form id="loginForm">
+          <input name="identity" placeholder="Email / Username" required />
+          <input name="password" type="password" placeholder="Password" required />
+          <a class="forgot">Forgot Password</a>
+          <button class="primary" type="submit">Log In</button>
+        </form>
+
+        <div class="or">or</div>
+
+        <div class="socials">
+          <button class="social fb">
+            <span class="icon">f</span>
+            <span>Facebook</span>
+          </button>
+          <button class="social google">
+            <span class="icon">G</span>
+            <span>Google</span>
+          </button>
+        </div>
+
+        <div class="signup">New to Meraki? <a href="signup.html">Sign up</a></div>
+      </div>
+
+      <footer class="small">Terms of Service &nbsp; Privacy Policy &nbsp; Cookie Policy</footer>
+    </div>
+
+    <div class="right">
+      <!-- Replace the placeholder image with your artwork/logo -->
+      <div class="art-wrap">
+        <img src="/placeholder-art.png" alt="Meraki art placeholder" class="art" />
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const f = e.target;
+      const body = {
+        identity: f.identity.value,
+        password: f.password.value
+      };
+      try {
+        const res = await fetch('http://localhost:5000/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body)
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error((data.message || JSON.stringify(data)) + (data.error ? ' - ' + data.error : ''));
+        // save token and userId then redirect to home
+        if (data.token) localStorage.setItem('token', data.token);
+        if (data.id) localStorage.setItem('userId', data.id);
+        window.location.href = 'home.html';
+      } catch (err) {
+        alert('Login error: ' + err.message);
+      }
+    });
+  </script>
+</body>
+</html>
