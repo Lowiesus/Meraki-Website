@@ -2,6 +2,7 @@ import cors from "cors";
 import dotenv from "dotenv";
 import express from "express";
 import mongoose from "mongoose";
+import authRoutes from "./routes/authRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
 
 dotenv.config();
@@ -17,6 +18,7 @@ app.get("/", (req, res) => {
 
 // mount routes
 app.use("/api/users", userRoutes);
+app.use("/api/auth", authRoutes);
 
 // connect to MongoDB
 // prefer IPv4 loopback to avoid IPv6 (::1) resolution issues on some setups
