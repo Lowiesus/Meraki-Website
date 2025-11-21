@@ -65,10 +65,17 @@
         });
         const data = await res.json();
         if (!res.ok) throw new Error((data.message || JSON.stringify(data)) + (data.error ? ' - ' + data.error : ''));
-        // save token and userId then redirect to home
+        // save token and userId
         if (data.token) localStorage.setItem('token', data.token);
         if (data.id) localStorage.setItem('userId', data.id);
-        window.location.href = 'home.html';
+
+        // if profile incomplete, redirect to setup page, otherwise go home
+        const needsSetup = !data.user_profile_picture || !data.user_bios || !data.user_username || !(data.user_tags && data.user_tags.length);
+        if (needsSetup) {
+          window.location.href = 'setup.html';
+        } else {
+          window.location.href = 'home.html';
+        }
       } catch (err) {
         alert('Login error: ' + err.message);
       }

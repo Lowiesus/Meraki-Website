@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Sign Up — Meraki</title>
+  <link rel="stylesheet" href="login.css">
+  <style> .card form{background:#fff;padding:24px} .card input{background:#fff}</style>
+</head>
+<body>
+  <div class="page">
+    <div class="left">
+      <div class="brand">
+        <h1>Sign Up</h1>
+        <p class="sub">Welcome to Meraki!</p>
+      </div>
+
+      <div class="card">
+        <form id="signupForm">
+          <input name="user_email_address" placeholder="Email Address" required />
+          <div class="row">
+            <input name="first_name" placeholder="First Name" required />
+            <input name="last_name" placeholder="Last Name" required />
+          </div>
+          <div class="row">
+            <input name="password" type="password" placeholder="Password" required />
+            <input name="confirmPassword" type="password" placeholder="Confirm Password" required />
+          </div>
+
+          <button class="primary" type="submit">Sign Up</button>
+        </form>
+
+        <div class="or">or</div>
+        <div class="socials">
+          <button class="social fb"><span class="icon">f</span><span>Facebook</span></button>
+          <button class="social google"><span class="icon">G</span><span>Google</span></button>
+        </div>
+
+        <div class="signup">Already a member? <a href="login.html">Login</a></div>
+      </div>
+    </div>
+
+    <div class="right">
+      <div class="art-wrap"><img src="logo512.png" class="art"/></div>
+    </div>
+  </div>
+
+  <script>
+    document.getElementById('signupForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const f = e.target;
+      const pw = f.password.value;
+      const pw2 = f.confirmPassword.value;
+      if (pw !== pw2) { alert('Passwords do not match'); return; }
+
+      const body = {
+        user_username: `${f.first_name.value} ${f.last_name.value}`,
+        user_email_address: f.user_email_address.value,
+        user_password: pw
+      };
+
+      try {
+        const res = await fetch('http://localhost:5000/api/users', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body)
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error((data.message || JSON.stringify(data)) + (data.error ? ' - ' + data.error : ''));
+        if (data.token) localStorage.setItem('token', data.token);
+        if (data.id) localStorage.setItem('userId', data.id);
+
+        const needsSetup = !data.user_profile_picture || !data.user_bios || !data.user_username || !(data.user_tags && data.user_tags.length);
+        if (needsSetup) window.location.href = 'setup.html'; else window.location.href = 'home.html';
+      } catch (err) { alert('Signup error: ' + err.message); }
+    });
+  </script>
+</body>
+</html>

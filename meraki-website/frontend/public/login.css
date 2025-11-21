@@ -1,0 +1,19 @@
+body{font-family:Inter, system-ui, -apple-system, 'Segoe UI', Roboto, Arial;background:#fff;margin:0}
+.page{display:flex;gap:40px;align-items:center;padding:40px}
+.left{width:480px}
+.brand h1{font-size:40px;margin:0 0 6px}
+.card{background:#fff;border-radius:8px;padding:0 0 20px;border:1px solid rgba(0,0,0,0.06);box-shadow:0 4px 10px rgba(0,0,0,0.05)}
+.card form{background:#3f6aa6;padding:28px;border-radius:6px 6px 0 0}
+.card input{width:100%;padding:14px;border-radius:8px;border:0;margin-bottom:12px}
+.card .primary{width:100%;background:#18a7ff;color:#fff;border-radius:28px;padding:12px;border:0;cursor:pointer}
+.or{padding:18px;text-align:center;color:#8899a6}
+.socials{padding:0 24px 24px}
+.social{display:flex;align-items:center;gap:12px;width:100%;padding:10px;border-radius:24px;border:1px solid #cfe9ff;background:#fff;margin-bottom:12px}
+.small{color:#97a6b2;padding:8px 0 0}
+.art-wrap{flex:1;display:flex;justify-content:center}
+.art{max-width:520px}
+
+@media (max-width:900px){
+  .page{flex-direction:column;align-items:stretch}
+  .art-wrap{order:-1}
+}
