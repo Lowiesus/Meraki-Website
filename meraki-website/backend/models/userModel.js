@@ -8,9 +8,11 @@ const userSchema = new mongoose.Schema({
   user_id: { type: Number, unique: true },
   user_role: {
     type: String,
-    enum: ["Admin", "Artist", "Programmer", "Craftsman"],
-    default: "Artist",
+    enum: ["Admin", "Client", "Artist", "Programmer", "Craftsman"],
+    default: "Client",
   },
+  // allow multiple roles if provided (array of role strings)
+  user_roles: [{ type: String, enum: ["Admin", "Client", "Artist", "Programmer", "Craftsman"] }],
   user_username: { type: String, required: true, maxlength: 50, trim: true },
   user_email_address: { type: String, required: true, unique: true, maxlength: 50, lowercase: true, trim: true },
   user_password: { type: String, required: true },

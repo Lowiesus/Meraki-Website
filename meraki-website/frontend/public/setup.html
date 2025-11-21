@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width,initial-scale=1" />
+	<title>Account Setup — Meraki</title>
+	<link rel="stylesheet" href="setup.css">
+</head>
+<body>
+	<main class="setup-page">
+		<section class="content">
+			<header class="heading">
+				<h1>Account Setup</h1>
+				<p class="lead">Personalize your account & we deliver you contents you prefer!</p>
+			</header>
+
+			<div class="card setup-card">
+				<form id="setupForm">
+					<div class="row inputs-row">
+						<input name="user_username" placeholder="Username" required />
+						<div class="roles-group" aria-label="Roles">
+							<label class="role"><input type="checkbox" name="roles[]" value="Client"> Client</label>
+							<label class="role"><input type="checkbox" name="roles[]" value="Artist"> Artist</label>
+							<label class="role"><input type="checkbox" name="roles[]" value="Programmer"> Programmer</label>
+							<label class="role"><input type="checkbox" name="roles[]" value="Craftsman"> Craftsman</label>
+						</div>
+					</div>
+
+					<div class="row">
+						<textarea name="user_bios" placeholder="Bios" rows="6"></textarea>
+					</div>
+
+					<div class="row tags-row">
+						<button type="button" id="addTagBtn" class="tag-btn">Add tags +</button>
+						<div id="tags" class="tags"></div>
+					</div>
+
+					<div class="spacer"></div>
+
+					<div class="footer-actions">
+						<button id="confirmBtn" type="button" class="confirm">Confirm</button>
+					</div>
+				</form>
+			</div>
+		</section>
+
+		<aside class="visual">
+			<div class="profile-circle" id="profileCircle" tabindex="0" role="button" aria-label="Upload profile picture">
+				<div class="profile-text">Insert your picture here!</div>
+			</div>
+			<input type="file" id="profileInput" accept="image/*" style="display:none" />
+		</aside>
+	</main>
+
+	<script>
+		// Simple tag adding UI
+		const addTagBtn = document.getElementById('addTagBtn');
+		const tagsEl = document.getElementById('tags');
+		const tags = [];
+
+		addTagBtn.addEventListener('click', () => {
+			const value = prompt('Enter a tag (e.g. watercolor, portrait, ui):');
+			if (!value) return;
+			tags.push(value.trim());
+			renderTags();
+		});
+
+		function renderTags(){
+			tagsEl.innerHTML = '';
+			tags.forEach((t, i) => {
+				const pill = document.createElement('span');
+				pill.className = 'tag';
+				pill.textContent = t;
+				const rem = document.createElement('button');
+				rem.type = 'button';
+				rem.className = 'tag-remove';
+				rem.textContent = '×';
+				rem.addEventListener('click', () => { tags.splice(i,1); renderTags(); });
+				pill.appendChild(rem);
+				tagsEl.appendChild(pill);
+			});
+		}
+
+		// Image upload handling (click circle to open file picker)
+		const profileCircle = document.getElementById('profileCircle');
+		const profileInput = document.getElementById('profileInput');
+		let profileData = '';
+
+		profileCircle.addEventListener('click', () => profileInput.click());
+		profileCircle.addEventListener('keypress', (e) => { if (e.key === 'Enter') profileInput.click(); });
+
+		profileInput.addEventListener('change', (ev) => {
+			const file = ev.target.files && ev.target.files[0];
+			if (!file) return;
+			const reader = new FileReader();
+			reader.onload = () => {
+				profileData = reader.result; // data URL
+				profileCircle.style.backgroundImage = `url(${profileData})`;
+				profileCircle.classList.add('has-image');
+			};
+			reader.readAsDataURL(file);
+		});
+
+		// Submit / Confirm handler (quick test POST to /api/users)
+		document.getElementById('confirmBtn').addEventListener('click', async () => {
+			const f = document.getElementById('setupForm');
+			const checkedRoles = Array.from(document.querySelectorAll('input[name="roles[]"]:checked')).map(i=>i.value);
+			const payload = {
+				user_username: f.user_username.value,
+				user_role: checkedRoles.join(', '),
+				user_roles: checkedRoles,
+				user_bios: f.user_bios.value,
+				tags: tags,
+				user_profile_picture: profileData
+			};
+
+			try {
+				const token = localStorage.getItem('token');
+				const userId = localStorage.getItem('userId');
+				let res;
+				if (token && userId) {
+					// update existing user
+					res = await fetch(`http://localhost:5000/api/users/${userId}`, {
+						method: 'PUT',
+						headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+						body: JSON.stringify(payload)
+					});
+				} else {
+					// fallback: create new user
+					res = await fetch('http://localhost:5000/api/users', {
+						method: 'POST',
+						headers: { 'Content-Type': 'application/json' },
+						body: JSON.stringify(payload)
+					});
+				}
+
+				const data = await res.json();
+				if (!res.ok) throw new Error((data.message || JSON.stringify(data)) + (data.error ? ' - ' + data.error : ''));
+				alert('Saved: ' + (data.user_id || data.id || 'OK'));
+			} catch (err) {
+				alert('Error: ' + err.message);
+			}
+		});
+	</script>
+</body>
+</html>

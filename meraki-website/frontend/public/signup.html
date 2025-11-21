@@ -71,12 +71,12 @@
       }
 
       const body = {
-        user_username: f.user_username.value || `${f.first_name.value} ${f.last_name.value}`,
+        user_username: `${f.first_name.value} ${f.last_name.value}`,
         user_email_address: f.user_email_address.value,
         user_password: pw,
-        user_role: 'Artist',
-        user_bios: f.user_bios.value || '',
-        user_social_links: f.user_social_links.value || '',
+        user_role: 'Client',
+        user_bios: '',
+        user_social_links: '',
         user_profile_picture: ''
       };
 
@@ -87,8 +87,12 @@
           body: JSON.stringify(body)
         });
         const data = await res.json();
-        if (!res.ok) throw new Error(data.message || JSON.stringify(data));
-        alert('Created: ' + JSON.stringify(data));
+        if (!res.ok) throw new Error((data.message || JSON.stringify(data)) + (data.error ? ' - ' + data.error : ''));
+        // store token and user id then redirect to setup
+        if (data.token) localStorage.setItem('token', data.token);
+        if (data.id) localStorage.setItem('userId', data.id);
+        // go to setup where user can complete profile
+        window.location.href = 'setup.html';
       } catch (err) {
         alert('Error: ' + err.message);
       }
