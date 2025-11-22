@@ -6,20 +6,6 @@ const Counter = mongoose.models.Counter || mongoose.model("Counter", counterSche
 
 const userSchema = new mongoose.Schema({
   user_id: { type: Number, unique: true },
-  user_role: {
-    type: String,
-    enum: [
-      "Admin",
-      "Client",
-      "Digital Artist",
-      "Traditional Artist",
-      "UI/UX Designer",
-      "Frontend Developer",
-      "Backend Developer",
-      "Craftsman"
-    ],
-    default: "Client",
-  },
   // allow multiple roles if provided (array of role strings)
   user_roles: [{ type: String, enum: [
     "Admin",

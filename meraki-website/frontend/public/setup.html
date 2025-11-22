@@ -86,13 +86,26 @@
         user_profile_picture: profileData
       };
       try{
+        console.log('Sending payload:', payload);
         const token = localStorage.getItem('token'); const userId = localStorage.getItem('userId'); let res;
         if (token && userId) {
           res = await fetch(`http://localhost:5000/api/users/${userId}`, { method:'PUT', headers: { 'Content-Type':'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify(payload) });
         } else {
           res = await fetch('http://localhost:5000/api/users', { method:'POST', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify(payload) });
         }
-        const data = await res.json(); if (!res.ok) throw new Error((data.message||JSON.stringify(data)) + (data.error? ' - '+data.error:''));
+
+        const raw = await res.text();
+        console.log('HTTP', res.status, res.statusText);
+        console.log('Raw response:', raw);
+
+        let data;
+        try {
+          data = raw ? JSON.parse(raw) : {};
+        } catch(parseErr){
+          throw new Error('Response not JSON — server returned HTML or error page: ' + raw);
+        }
+
+        if (!res.ok) throw new Error((data.message||JSON.stringify(data)) + (data.error? ' - '+data.error:''));
         alert('Saved'); if (res.ok) window.location.href = 'home.html';
       }catch(err){ alert('Error: '+err.message); }
     });

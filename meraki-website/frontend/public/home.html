@@ -5,6 +5,16 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Meraki — Home</title>
   <link rel="stylesheet" href="home.css">
+  <style>
+    /* Minimal modal styles */
+    .modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:center;justify-content:center;z-index:1000}
+    .modal{background:#fff;padding:18px;border-radius:8px;max-width:560px;width:96%;box-shadow:0 10px 30px rgba(0,0,0,.25)}
+    .modal-open{display:flex}
+    .row{margin:8px 0}
+    .tags-list span{display:inline-block;background:#eee;padding:4px 8px;margin:2px;border-radius:12px}
+    .close-btn{float:right;background:transparent;border:0;font-size:16px;cursor:pointer}
+    .create-post{cursor:pointer}
+  </style>
 </head>
 <body>
   <div class="app">
@@ -60,22 +70,220 @@
     </aside>
   </div>
 
-  <script>
-    // Ensure user is authenticated, otherwise redirect
-    const token = localStorage.getItem('token');
-    const userId = localStorage.getItem('userId');
-    if (!token || !userId) {
-      window.location.href = 'login.html';
-    } else {
-      // fetch user profile to show avatar/username
-      fetch(`http://localhost:5000/api/users/${userId}`, { headers: { 'Authorization': `Bearer ${token}` } })
-        .then(r => r.json())
-        .then(data => {
-          if (data && data.user_profile_picture) {
-            document.getElementById('avatar').src = data.user_profile_picture;
-          }
-        }).catch(err => console.warn('Profile fetch failed', err));
+  <!-- Create Post modal -->
+  <div id="createModal" class="modal-backdrop" role="dialog" aria-hidden="true">
+    <div class="modal" role="document">
+      <button id="closeCreate" class="close-btn" aria-label="Close">✕</button>
+      <h2>Create post</h2>
+
+      <div class="row">
+        <label>Title<br><input id="postTitle" type="text" maxlength="100" style="width:100%"></label>
+      </div>
+
+      <div class="row">
+        <label>Category<br>
+          <select id="postCategory" style="width:100%">
+            <option>Post</option>
+            <option>Commission</option>
+            <option>Selling</option>
+          </select>
+        </label>
+      </div>
+
+      <div class="row">
+        <label>Price<br><input id="postPrice" type="number" min="0" style="width:100%"></label>
+      </div>
+
+      <div class="row">
+        <label>Description<br><textarea id="postContent" rows="5" maxlength="1000" style="width:100%"></textarea></label>
+      </div>
+
+      <div class="row">
+        <label>Tags (comma separated)<br><input id="postTags" style="width:100%"></label>
+      </div>
+
+      <div class="row">
+        <label>Images (optional)<br><input id="postImages" type="file" accept="image/*" multiple></label>
+      </div>
+
+      <div class="row">
+        <label><input id="postDeposit" type="checkbox"> Deposit required</label>
+      </div>
+
+      <div class="row">
+        <button id="submitPost">Create</button>
+        <span id="postStatus" style="margin-left:12px"></span>
+      </div>
+    </div>
+  </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  // Ensure user is authenticated, otherwise redirect
+  const token = localStorage.getItem('token');
+  const userId = localStorage.getItem('userId');
+  if (!token || !userId) {
+    window.location.href = 'login.html';
+    return;
+  }
+
+  // fetch user profile to show avatar/username
+  fetch(`http://localhost:5000/api/users/${userId}`, { headers: { 'Authorization': `Bearer ${token}` } })
+    .then(r => r.json())
+    .then(data => {
+      if (data && data.user_profile_picture) {
+        const avatarEl = document.getElementById('avatar');
+        if (avatarEl) avatarEl.src = data.user_profile_picture;
+      }
+    }).catch(err => console.warn('Profile fetch failed', err));
+
+  // Modal logic
+  const openBtn = document.querySelector('.create-post');
+  const modal = document.getElementById('createModal');
+  const closeBtn = document.getElementById('closeCreate');
+  const submitBtn = document.getElementById('submitPost');
+  const statusEl = document.getElementById('postStatus');
+
+  if (openBtn && modal) {
+    openBtn.addEventListener('click', ()=>{ modal.classList.add('modal-open'); modal.setAttribute('aria-hidden','false'); });
+  }
+  if (closeBtn && modal) {
+    closeBtn.addEventListener('click', ()=>{ modal.classList.remove('modal-open'); modal.setAttribute('aria-hidden','true'); if (statusEl) statusEl.textContent=''; });
+  }
+  // close when clicking backdrop
+  if (modal) {
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) {
+        modal.classList.remove('modal-open');
+        modal.setAttribute('aria-hidden','true');
+        if (statusEl) statusEl.textContent='';
+      }
+    });
+  }
+
+  async function filesToDataURLs(files){
+    const out = [];
+    for(const f of files){
+      out.push(await new Promise(res=>{
+        const r = new FileReader();
+        r.onload = ()=>res(r.result);
+        r.readAsDataURL(f);
+      }));
     }
-  </script>
+    return out;
+  }
+  
+  function escapeHtml(str){
+    if (!str) return '';
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
+  }
+
+  function renderPosts(posts){
+    const container = document.querySelector('.posts');
+    if (!container) return;
+    container.innerHTML = '';
+    if (!posts || posts.length === 0) {
+      container.innerHTML = '<div class="empty">Your feed is empty — start by creating a post or following people.</div>';
+      return;
+    }
+    posts.forEach(p => {
+      const article = document.createElement('article');
+      article.className = 'post-card';
+      const title = escapeHtml(p.post_title || 'Untitled');
+      const cat = p.post_category ? `<small style="margin-left:8px;color:#666">${escapeHtml(p.post_category)}</small>` : '';
+      const content = escapeHtml(p.post_content || '');
+      const tags = p.post_tags && p.post_tags.length ? `<div class="post-tags" style="color:#666;font-size:13px;margin-top:6px">${escapeHtml(p.post_tags.join(', '))}</div>` : '';
+      const price = p.post_price ? `<div class="post-price" style="color:#222;margin-top:6px">Price: ₱${escapeHtml(p.post_price)}</div>` : '';
+      article.innerHTML = `<header style="margin-bottom:8px"><strong>${title}</strong>${cat}</header>
+                           <div class="post-body" style="white-space:pre-wrap">${content}</div>
+                           ${tags}
+                           ${price}`;
+      if (p.post_images && p.post_images.length) {
+        const imgsWrap = document.createElement('div');
+        imgsWrap.style.display = 'flex';
+        imgsWrap.style.flexWrap = 'wrap';
+        imgsWrap.style.marginTop = '8px';
+        p.post_images.slice(0,4).forEach(src => {
+          const img = document.createElement('img');
+          img.src = src;
+          img.style.maxWidth = '120px';
+          img.style.maxHeight = '120px';
+          img.style.objectFit = 'cover';
+          img.style.marginRight = '8px';
+          img.style.marginBottom = '8px';
+          imgsWrap.appendChild(img);
+        });
+        article.appendChild(imgsWrap);
+      }
+      container.appendChild(article);
+    });
+  }
+
+  async function fetchPosts(){
+    try{
+      const res = await fetch('http://localhost:5000/api/posts', { headers: { 'Content-Type':'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) } });
+      const raw = await res.text();
+      let data = [];
+      try { data = raw ? JSON.parse(raw) : []; } catch(e){ console.error('Posts parse error', raw); data = []; }
+      const posts = Array.isArray(data) ? data : (data.posts || []);
+      renderPosts(posts);
+    }catch(err){
+      console.error('Failed to fetch posts', err);
+    }
+  }
+
+  if (submitBtn) {
+    submitBtn.addEventListener('click', async ()=>{
+      if (statusEl) statusEl.textContent = 'Sending...';
+      const payload = {
+        post_title: document.getElementById('postTitle').value.trim(),
+        post_content: document.getElementById('postContent').value.trim(),
+        post_category: document.getElementById('postCategory').value,
+        post_price: Number(document.getElementById('postPrice').value) || 0,
+        post_tags: (document.getElementById('postTags').value || '').split(',').map(s=>s.trim()).filter(Boolean),
+        post_deposit_required: !!document.getElementById('postDeposit').checked,
+        post_images: []
+      };
+
+      const files = document.getElementById('postImages').files;
+      if (files && files.length) {
+        try {
+          payload.post_images = await filesToDataURLs(files);
+        } catch(e) {
+          console.error(e);
+        }
+      }
+
+      try {
+        const res = await fetch('http://localhost:5000/api/posts', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+          body: JSON.stringify(payload)
+        });
+        const raw = await res.text();
+        let data;
+        try { data = raw ? JSON.parse(raw) : {}; } catch(e){ throw new Error('Server returned non-JSON: '+raw); }
+
+        if (!res.ok) throw new Error(data.message || 'Create failed');
+        if (statusEl) statusEl.textContent = 'Created ✓';
+        // optionally refresh posts list here
+        setTimeout(()=>{ if (modal) { modal.classList.remove('modal-open'); modal.setAttribute('aria-hidden','true'); } if (statusEl) statusEl.textContent=''; }, 800);
+        // refresh posts after creation
+        fetchPosts();
+      } catch(err) {
+        if (statusEl) statusEl.textContent = 'Error: ' + err.message;
+      }
+    });
+  }
+
+  // initial load
+  fetchPosts();
+});
+</script>
 </body>
 </html>
