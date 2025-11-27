@@ -18,7 +18,7 @@ const LoginPage = () => {
   };
 
   return (
-    <div className="h-screen grid lg:grid-cols-2">
+    <div className="relative h-screen grid lg:grid-cols-2">
       {/* Left Side - Form */}
       <div className="flex flex-col justify-center items-center p-6 sm:p-12">
         <div className="w-full max-w-md space-y-8">
@@ -91,16 +91,23 @@ const LoginPage = () => {
 
             <button
               type="submit"
-              className="btn btn-primary w-full"
+              className="btn w-full"
               disabled={isLoggingIn}
+              style={{
+                backgroundColor: "#428DFE",
+                color: "#ffffff",
+                borderColor: "#428DFE",
+              }}
             >
               {isLoggingIn ? (
                 <>
-                  <Loader2 className="h-5 w-5 animate-spin" />
-                  Loading...
+                  <Loader2 className="h-5 w-5 animate-spin text-white" />
+                  <span style={{ color: "#ffffff", marginLeft: 8 }}>
+                    Loading...
+                  </span>
                 </>
               ) : (
-                "Sign in"
+                <span style={{ color: "#ffffff" }}>Sign in</span>
               )}
             </button>
           </form>
@@ -116,13 +123,24 @@ const LoginPage = () => {
         </div>
       </div>
 
-      {/* Right Side - Image/Pattern */}
-      <AuthImagePattern
-        title={"Welcome back!"}
-        subtitle={
-          "Sign in to continue your conversations and catch up with your messages."
-        }
-      />
+      {/* Right Side - Image Pattern */}
+      <div className="hidden lg:block" aria-hidden="true">
+        <img
+          src="/login-panel.png"
+          alt="Meraki art"
+          style={{
+            position: "fixed",
+            top: 0,
+            right: 0,
+            height: "100vh",
+            width: "50vw",
+            objectFit: "contain",
+            objectPosition: "center right",
+            display: "block",
+            pointerEvents: "none",
+          }}
+        />
+      </div>
     </div>
   );
 };
