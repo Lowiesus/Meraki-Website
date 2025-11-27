@@ -5,7 +5,7 @@ import logoSrc from "/header logo.png";
 
 const Navbar = () => {
   const { logout, authUser } = useAuthStore();
-
+  //skibidi
   return (
     <header
       className="bg-base-100 border-b border-base-300 fixed w-full top-0 z-40 
