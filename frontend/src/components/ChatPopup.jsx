@@ -1,13 +1,15 @@
 import { Minus, X } from "lucide-react";
 import { useChatStore } from "../store/useChatStore";
 import ChatContainer from "./ChatContainer";
+import NoChatSelected from "./NoChatSelected";
+import Sidebar from "./Sidebar";
 
 const ChatPopup = ({ open, onClose }) => {
   const { selectedUser } = useChatStore();
   if (!open) return null;
 
   return (
-    <div className="fixed right-6 bottom-6 z-50 w-[360px] h-[560px] bg-base-100 rounded-xl shadow-2xl border border-base-300 overflow-hidden flex flex-col">
+    <div className="fixed right-6 bottom-6 z-50 w-[92vw] max-w-[920px] md:max-w-[720px] lg:max-w-[640px] h-[80vh] bg-base-100 rounded-xl shadow-2xl border border-base-300 overflow-hidden flex flex-col">
       <header className="flex items-center justify-between px-4 py-2 border-b border-base-200 bg-gradient-to-r from-white/30 to-white/10">
         <div className="flex items-center gap-3">
           <div className="w-9 h-9 rounded-full bg-sky-300" />
@@ -24,8 +26,11 @@ const ChatPopup = ({ open, onClose }) => {
       </header>
 
       <div className="flex-1 min-h-0 overflow-hidden flex">
-        {/* ChatContainer handles messages and input. It expects a selectedUser from store */}
-        <ChatContainer />
+        <Sidebar />
+
+        <div className="flex-1">
+          {selectedUser ? <ChatContainer /> : <NoChatSelected />}
+        </div>
       </div>
     </div>
   );

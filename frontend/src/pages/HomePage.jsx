@@ -10,12 +10,12 @@ const HomePage = () => {
   return (
     <div className="min-h-screen bg-base-200">
       <Navbar onOpenMessages={() => setChatOpen(true)} />
-      {/* Top spacing removed; sidebar is fixed left — add left margin so content doesn't overlap */}
+      
       <div className="pt-6 lg:pt-6" />
 
       <div className="container mx-auto px-4 ml-20 lg:ml-72">
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-6">
-          {/* Center feed */}
+          {/* Center feed achuchbells*/}
           <main className="py-6">
             <div className="max-w-3xl mx-auto">
               <div className="bg-base-100 rounded-xl shadow-md overflow-hidden">
