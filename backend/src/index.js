@@ -1,8 +1,8 @@
-import express from "express";
-import http from "http";
-import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
 import cors from "cors";
+import dotenv from "dotenv";
+import express from "express";
+import http from "http";
 
 import path from "path";
 import { fileURLToPath } from "url";
@@ -57,9 +57,45 @@ if (process.env.NODE_ENV === "production") {
 async function start() {
   try {
     await connectDB();
-    server.listen(PORT, () => {
-      console.log("server is running on PORT:" + PORT);
+    // Try to listen on PORT, but if the port is in use try the next one(s).
+    let currentPort = PORT;
+    const maxRetries = 5;
+    let attempts = 0;
+
+    server.on("listening", () => {
+      console.log(`server is running on PORT: ${currentPort}`);
     });
+
+    server.on("error", (err) => {
+      if (err && err.code === "EADDRINUSE") {
+        attempts += 1;
+        if (attempts > maxRetries) {
+          console.error(
+            `Port ${currentPort} is in use and max retries (${maxRetries}) exceeded.\n` +
+              `Either free the port or set a different PORT in your environment (.env).`
+          );
+          process.exit(1);
+        }
+
+        const nextPort = currentPort + 1;
+        console.warn(`Port ${currentPort} in use, trying ${nextPort}... (attempt ${attempts}/${maxRetries})`);
+        currentPort = nextPort;
+
+        // Try listening on the new port
+        try {
+          server.listen(currentPort);
+        } catch (listenErr) {
+          // If listen throws synchronously, log and let the 'error' handler manage retries
+          console.warn("Listen attempt failed, will retry via error handler:", listenErr.message || listenErr);
+        }
+      } else {
+        console.error("Server error:", err);
+        process.exit(1);
+      }
+    });
+
+    // Initial listen
+    server.listen(currentPort);
   } catch (err) {
     console.error("Failed to start server:", err);
     process.exit(1);
