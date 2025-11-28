@@ -1,6 +1,6 @@
+import { Camera, Mail, User } from "lucide-react";
 import { useState } from "react";
 import { useAuthStore } from "../store/useAuthStore";
-import { Camera, Mail, User } from "lucide-react";
 
 const ProfilePage = () => {
   const { authUser, isUpdatingProfile, updateProfile } = useAuthStore();
@@ -9,9 +9,15 @@ const ProfilePage = () => {
   const handleImageUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
+    // change this value to increase/decrease allowed upload size
+    const MAX_FILE_SIZE = 200 * 1024; // 200 KB
+
+    if (file.size > MAX_FILE_SIZE) {
+      alert(`File is too large — max ${Math.round(MAX_FILE_SIZE / 1024)}KB`);
+      return;
+    }
 
     const reader = new FileReader();
-
     reader.readAsDataURL(file);
 
     reader.onload = async () => {
@@ -68,7 +74,7 @@ const ProfilePage = () => {
                 : "Click the camera icon to update your photo"}
             </p>
             <p className="text-xs text-red-400">
-              * Only images below 75KB are allowed.
+              * Only images below 200KB are allowed.
             </p>
           </div>
 
