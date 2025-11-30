@@ -7,14 +7,17 @@ import http from "http";
 import path from "path";
 import { fileURLToPath } from "url";
 
-import { connectDB } from "./lib/db.js";
-import authRoutes from "./routes/auth.route.js";
-import messageRoutes from "./routes/message.route.js";
+// Load .env as early as possible so modules imported below (controllers, cloudinary, etc.) can read env vars.
+dotenv.config({ path: path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..", ".env") });
+
+// Dynamic imports for modules that may read process.env on import time
+const { connectDB } = await import("./lib/db.js");
+const authRoutes = (await import("./routes/auth.route.js")).default;
+const messageRoutes = (await import("./routes/message.route.js")).default;
+const postsRoutes = (await import("./routes/post.route.js")).default;
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-
-dotenv.config({ path: path.resolve(__dirname, "../..", ".env") });
 
 const PORT = process.env.PORT ? Number(process.env.PORT) : 5001;
 const MONGO_URI =
@@ -43,6 +46,7 @@ app.use(
 // routes
 app.use("/api/auth", authRoutes);
 app.use("/api/messages", messageRoutes);
+app.use("/api/posts", postsRoutes);
 
 
 if (process.env.NODE_ENV === "production") {

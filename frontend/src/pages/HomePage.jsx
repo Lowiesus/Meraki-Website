@@ -2,6 +2,7 @@
 import { MessageCircle } from "lucide-react";
 import { useState } from "react";
 import ChatPopup from "../components/ChatPopup";
+import Feed from "../components/Feed";
 import Navbar from "../components/Navbar";
 
 const HomePage = () => {
@@ -15,28 +16,12 @@ const HomePage = () => {
 
       <div className="container mx-auto px-4 ml-20 lg:ml-72">
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-6">
-          {/* Center feed achuchbells*/}
+          {/* Center feed */}
           <main className="py-6">
             <div className="max-w-3xl mx-auto">
-              <div className="bg-base-100 rounded-xl shadow-md overflow-hidden">
-                <div className="p-6 flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-full bg-sky-400" />
-                  <div>
-                    <div className="font-semibold">USERNAME</div>
-                    <div className="text-xs text-zinc-400">5h</div>
-                  </div>
-                </div>
-
-                <div className="relative h-[600px] bg-gradient-to-b from-sky-100 to-sky-700">
-                  <button className="absolute left-6 top-1/2 -translate-y-1/2 btn btn-ghost btn-circle">‹</button>
-                  <button className="absolute right-6 top-1/2 -translate-y-1/2 btn btn-ghost btn-circle">›</button>
-
-                  <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-2">
-                    <span className="w-2 h-2 rounded-full bg-white/80" />
-                    <span className="w-2 h-2 rounded-full bg-white/50" />
-                    <span className="w-2 h-2 rounded-full bg-white/50" />
-                  </div>
-                </div>
+              <div className="space-y-6">
+                {/* Feed component */}
+                <Feed />
               </div>
             </div>
           </main>
