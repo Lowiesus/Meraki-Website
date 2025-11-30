@@ -1,5 +1,6 @@
 import cloudinary from "../lib/cloudinary.js";
 import Post from "../models/post.model.js";
+import Comment from "../models/comment.model.js";
 
 // Create a new post. Expects { caption, images: [base64Image,...] }
 export const createPost = async (req, res) => {
@@ -67,5 +68,47 @@ export const getPosts = async (req, res) => {
   } catch (error) {
     console.error("Error in getPosts:", error.message);
     res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+// Get comments for a given post
+export const getComments = async (req, res) => {
+  try {
+    const { id: postId } = req.params;
+    const comments = await Comment.find({ post: postId })
+      .sort({ createdAt: -1 })
+      .populate("author", "fullName username profilePic");
+
+    return res.status(200).json(comments);
+  } catch (error) {
+    console.error("Error in getComments:", error.message || error);
+    return res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+// Add a comment to a post (requires authenticated user)
+export const addComment = async (req, res) => {
+  try {
+    const { id: postId } = req.params;
+    const userId = req.user && (req.user._id || req.user.id);
+    const { text } = req.body;
+
+    if (!userId) return res.status(401).json({ message: "Unauthorized" });
+    if (!text || typeof text !== "string" || !text.trim()) {
+      return res.status(400).json({ message: "Comment text is required" });
+    }
+
+    const post = await Post.findById(postId);
+    if (!post) return res.status(404).json({ message: "Post not found" });
+
+    const comment = new Comment({ post: postId, author: userId, text: text.trim() });
+    await comment.save();
+
+    const populated = await comment.populate("author", "fullName username profilePic");
+
+    return res.status(201).json(populated);
+  } catch (error) {
+    console.error("Error in addComment:", error.message || error);
+    return res.status(500).json({ message: "Internal server error" });
   }
 };

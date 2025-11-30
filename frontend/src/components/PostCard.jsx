@@ -16,8 +16,9 @@ const timeAgo = (iso) => {
 };
 
 import { ChevronLeft, ChevronRight, Heart, MessageSquare, MoreHorizontal } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { useAuthStore } from '../store/useAuthStore';
+import { axiosInstance } from '../lib/axios';
 
 const PostCard = ({ post }) => {
   const { author, caption, media, createdAt, likes } = post || {};
@@ -35,6 +36,10 @@ const PostCard = ({ post }) => {
 
   const [liked, setLiked] = useState(likedInitial);
   const [likesCount, setLikesCount] = useState(likesCountInitial);
+  const [comments, setComments] = useState([]);
+  const [commentsCount, setCommentsCount] = useState(null);
+  const [commentText, setCommentText] = useState("");
+  const [posting, setPosting] = useState(false);
 
   const toggleLike = () => {
     if (liked) {
@@ -43,6 +48,43 @@ const PostCard = ({ post }) => {
     } else {
       setLiked(true);
       setLikesCount((c) => c + 1);
+    }
+  };
+
+  useEffect(() => {
+    let mounted = true;
+    const pid = post?._id || post?.id;
+    if (!pid) return;
+    (async () => {
+      try {
+        const res = await axiosInstance.get(`/posts/${pid}/comments`);
+        if (!mounted) return;
+        setComments(res.data || []);
+        setCommentsCount(Array.isArray(res.data) ? res.data.length : null);
+      } catch (err) {
+        // ignore fetch errors for comments
+      }
+    })();
+    return () => { mounted = false; };
+  }, [post]);
+
+  const submitComment = async (e) => {
+    e.preventDefault();
+    if (!commentText.trim()) return;
+    const pid = post?._id || post?.id;
+    if (!pid) return;
+    setPosting(true);
+    try {
+      const res = await axiosInstance.post(`/posts/${pid}/comments`, { text: commentText.trim() });
+      const created = res.data;
+      // server returns the created comment (populated)
+      setComments((c) => [created, ...c]);
+      setCommentsCount((c) => (typeof c === 'number' ? c + 1 : (c || 0) + 1));
+      setCommentText("");
+    } catch (err) {
+      // Could show toast here
+    } finally {
+      setPosting(false);
     }
   };
 
@@ -103,13 +145,37 @@ const PostCard = ({ post }) => {
 
           <div className="flex items-center gap-2 text-zinc-500">
             <MessageSquare className="w-5 h-5" />
-            <span className="text-sm">{/* placeholder for comments count */}13,384</span>
+            <span className="text-sm">{commentsCount !== null ? commentsCount.toLocaleString() : '—'}</span>
           </div>
         </div>
 
         <p className="text-sm text-zinc-800 mb-3">{caption}</p>
 
-        <div className="text-sm text-zinc-400">Add a comment...</div>
+        <div className="mt-3">
+          {comments && comments.length > 0 && (
+            <div className="mb-2">
+              {comments.slice(0, 3).map((c) => (
+                <div key={c._id || c.id} className="text-sm mb-1">
+                  <span className="font-semibold mr-2">{c.author?.username || c.author?.fullName || 'User'}</span>
+                  <span className="text-zinc-800">{c.text}</span>
+                </div>
+              ))}
+            </div>
+          )}
+
+          <form onSubmit={submitComment} className="flex items-center gap-2">
+            <input
+              value={commentText}
+              onChange={(e) => setCommentText(e.target.value)}
+              placeholder={authUser ? 'Add a comment...' : 'Log in to comment'}
+              disabled={!authUser || posting}
+              className="flex-1 input input-sm bg-zinc-100"
+            />
+            <button type="submit" className="btn btn-sm" disabled={!authUser || posting || !commentText.trim()}>
+              {posting ? 'Posting...' : 'Post'}
+            </button>
+          </form>
+        </div>
       </div>
     </article>
   );
