@@ -1,12 +1,12 @@
 import cloudinary from "../lib/cloudinary.js";
-import Post from "../models/post.model.js";
 import Comment from "../models/comment.model.js";
+import Post from "../models/post.model.js";
 
 // Create a new post. Expects { caption, images: [base64Image,...] }
 export const createPost = async (req, res) => {
   try {
     const authorId = req.user._id || req.user.id;
-    const { caption, images } = req.body;
+    const { caption, images, listing } = req.body || {};
 
     // Server-side upload size limit (in bytes). Match frontend: 200 KB
     const MAX_BYTES = 200 * 1024;
@@ -42,10 +42,26 @@ export const createPost = async (req, res) => {
       }
     }
 
+    // Determine if this post is a listing
+    let kind = "post";
+    let listingData = undefined;
+    if (listing && (listing.name || listing.price || listing.type || listing.description)) {
+      kind = "listing";
+      listingData = {
+        name: listing.name || "",
+        type: listing.type || "",
+        price: typeof listing.price === "number" ? listing.price : (listing.price ? Number(listing.price) : undefined),
+        description: listing.description || "",
+        tags: Array.isArray(listing.tags) ? listing.tags.map(String) : [],
+      };
+    }
+
     const newPost = new Post({
       author: authorId,
       caption: caption || "",
       media: mediaUrls,
+      kind,
+      listing: listingData,
     });
 
     await newPost.save();

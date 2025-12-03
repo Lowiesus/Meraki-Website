@@ -1,5 +1,5 @@
 import express from "express";
-import { createPost, getPosts, getComments, addComment } from "../controllers/post.controller.js";
+import { addComment, createPost, getComments, getPosts } from "../controllers/post.controller.js";
 import { protectRoute } from "../middleware/auth.middleware.js";
 
 const router = express.Router();

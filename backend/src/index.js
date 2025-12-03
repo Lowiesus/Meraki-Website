@@ -15,6 +15,7 @@ const { connectDB } = await import("./lib/db.js");
 const authRoutes = (await import("./routes/auth.route.js")).default;
 const messageRoutes = (await import("./routes/message.route.js")).default;
 const postsRoutes = (await import("./routes/post.route.js")).default;
+const cartRoutes = (await import("./routes/cart.route.js")).default;
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -47,6 +48,7 @@ app.use(
 app.use("/api/auth", authRoutes);
 app.use("/api/messages", messageRoutes);
 app.use("/api/posts", postsRoutes);
+app.use("/api/cart", cartRoutes);
 
 
 if (process.env.NODE_ENV === "production") {
