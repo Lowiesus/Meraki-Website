@@ -1,14 +1,13 @@
 import React, { useState, useEffect } from "react";
 
-// Dummy navbar (replace with your own if desired)
-function Navbar() {
+function Header() {
   return (
     <div
       style={{
         background: "#0F4786",
         color: "#fff",
         fontWeight: "bold",
-        padding: "14px 30px",
+        padding: "14px 20px",
         fontSize: 21,
         letterSpacing: "2px",
       }}
@@ -125,9 +124,7 @@ const dummyCommissions = [
 // Order details (with progress history)
 function OrderDetails({ order }) {
   const [expanded, setExpanded] = useState(false);
-  // Simulate fetching progress from backend
   const progress = mockProgressHistory[order.id] || [];
-  // Show latest only by default
   const visible =
     expanded || progress.length <= 1
       ? progress
@@ -139,31 +136,46 @@ function OrderDetails({ order }) {
         background: "#fff",
         boxShadow: "0 2px 8px rgba(22,110,219,0.08)",
         borderRadius: 20,
-        padding: "25px 36px 22px 32px",
+        padding: "20px",
         margin: "8px 0 24px 0",
-        maxWidth: 650,
+        maxWidth: "70%",
         border: "1.5px solid #91bbf0",
+        boxSizing: "border-box",
       }}
     >
       <div
         style={{
           color: "#005cbf",
           fontWeight: 700,
-          fontSize: 22,
+          fontSize: "clamp(16px, 4vw, 22px)",
           marginBottom: 0,
           letterSpacing: 1,
         }}
       >
         ORDER DETAILS
       </div>
-      <div style={{ fontSize: 13, color: "#888", margin: "3px 0 10px" }}>
+      <div
+        style={{
+          fontSize: 13,
+          color: "#888",
+          margin: "3px 0 10px",
+          wordBreak: "break-word",
+        }}
+      >
         ORDER#: {order.orderNo}
       </div>
-      <div style={{ fontWeight: "bold", fontSize: 16, marginBottom: 2 }}>
+      <div
+        style={{
+          fontWeight: "bold",
+          fontSize: 16,
+          marginBottom: 2,
+          wordBreak: "break-word",
+        }}
+      >
         COMMISSION TYPE:{" "}
         <span style={{ fontWeight: "normal" }}>{order.type}</span>
       </div>
-      <div style={{ marginBottom: 15, marginTop: 6 }}>
+      <div style={{ marginBottom: 15, marginTop: 6, wordBreak: "break-word" }}>
         COMMISSIONER:{" "}
         <span style={{ color: "#005cbf", fontWeight: "bold" }}>
           CLIENT_USERNAME
@@ -204,45 +216,65 @@ function OrderDetails({ order }) {
             - CLICK TO VIEW PROGRESS HISTORY -
           </div>
         )}
-        <div style={{ marginLeft: 10 }}>
+        <div style={{ marginLeft: 10, maxWidth: "100%", overflow: "hidden" }}>
           {visible.map((item, idx) => (
             <div
               key={item.id}
               style={{
                 marginBottom: expanded ? 16 : 8,
                 display: "flex",
-                alignItems: "center",
+                alignItems: "flex-start",
                 fontSize: 15,
+                flexWrap: "wrap",
+                gap: "6px",
+                wordBreak: "break-word",
               }}
             >
               <span
                 style={{
                   minWidth: 12,
                   minHeight: 12,
+                  width: 12,
+                  height: 12,
                   background:
                     idx === visible.length - 1 ? "#34ba47" : "#bbbbbb",
                   borderRadius: "50%",
                   display: "inline-block",
-                  marginRight: 15,
-                  marginTop: expanded ? 0 : 2,
+                  marginRight: 9,
+                  marginTop: 4,
+                  flexShrink: 0,
                 }}
               />
-              <span style={{ fontWeight: "bold" }}>{item.seller}</span>
+              <span style={{ fontWeight: "bold", flexShrink: 0 }}>
+                {item.seller}
+              </span>
               <span
-                style={{ marginLeft: 5, color: "#2d2d2d", fontWeight: 400 }}
+                style={{
+                  color: "#2d2d2d",
+                  fontWeight: 400,
+                  flex: "1 1 auto",
+                  minWidth: "120px",
+                }}
               >
                 {item.message}
               </span>
-              <span style={{ marginLeft: 13, fontSize: 12, color: "#888" }}>
+              <span
+                style={{
+                  fontSize: 12,
+                  color: "#888",
+                  flexShrink: 0,
+                  whiteSpace: "nowrap",
+                }}
+              >
                 {item.date}
               </span>
               {item.viewable && (
                 <span
                   style={{
                     color: "#4092f1",
-                    marginLeft: 7,
                     fontSize: 13,
                     cursor: "pointer",
+                    flexShrink: 0,
                   }}
                   onClick={() => alert("Show details for this update.")}
                 >
@@ -286,16 +318,26 @@ export default function ShoppingCart() {
   };
 
   return (
-    <div style={{ background: "#eaf2fe", minHeight: "100vh" }}>
-      <Navbar />
-      {/* Tabs (just visuals) */}
+    <div
+      style={{
+        background: "#eaf2fe",
+        minHeight: "100vh",
+        paddingBottom: "40px",
+        width: "100%",
+        overflowX: "hidden",
+        boxSizing: "border-box",
+      }}
+      className="ml-20 lg:ml-72"
+    >
+      <Header />
       <div
         style={{
           display: "flex",
           gap: 32,
-          margin: "28px 0 13px 36px",
+          margin: "28px 0 13px 20px",
           fontSize: 17,
           fontWeight: 500,
+          flexWrap: "wrap",
         }}
       >
         <span
@@ -310,12 +352,18 @@ export default function ShoppingCart() {
         <span style={{ color: "#888" }}>PRODUCTS</span>
         <span style={{ color: "#888" }}>COMPLETED</span>
       </div>
-      <div style={{ margin: "0 22px" }}>
+      <div
+        style={{
+          margin: "0 20px",
+          maxWidth: "calc(100% - 40px)",
+          overflow: "hidden",
+        }}
+      >
         {loading ? (
           <div>Loading...</div>
         ) : (
           commissions.map((c) => (
-            <div key={c.id}>
+            <div key={c.id} style={{ maxWidth: "100%", overflow: "hidden" }}>
               <div
                 className={`commission-card ${c.status.toLowerCase()} ${
                   checkedIds.includes(c.id) ? "checked" : ""
@@ -327,10 +375,14 @@ export default function ShoppingCart() {
                   border: "1px solid #ddd",
                   borderRadius: 12,
                   boxShadow: "0 2px 8px rgba(0,0,0,0.04)",
-                  padding: "16px 20px",
+                  padding: "16px 12px",
                   marginBottom: 12,
                   position: "relative",
                   cursor: "pointer",
+                  flexWrap: "wrap",
+                  gap: "12px",
+                  maxWidth: "100%",
+                  boxSizing: "border-box",
                 }}
                 // Main display (click to open order details)
                 onClick={() => handleSelectOrder(c)}
@@ -346,9 +398,9 @@ export default function ShoppingCart() {
                     }}
                     className="card-checkbox"
                     style={{
-                      marginRight: 14,
                       width: 18,
                       height: 18,
+                      flexShrink: 0,
                     }}
                   />
                 )}
@@ -360,10 +412,10 @@ export default function ShoppingCart() {
                     height: 48,
                     borderRadius: 8,
                     background: "#FF0000",
-                    marginRight: 12,
                     display: "flex",
                     justifyContent: "center",
                     alignItems: "center",
+                    flexShrink: 0,
                   }}
                 >
                   <span
@@ -377,8 +429,21 @@ export default function ShoppingCart() {
                   </span>
                 </div>
                 {/* Seller info and commission */}
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontWeight: "bold", fontSize: 13 }}>
+                <div
+                  style={{
+                    flex: "1 1 auto",
+                    minWidth: "150px",
+                    maxWidth: "100%",
+                    overflow: "hidden",
+                  }}
+                >
+                  <div
+                    style={{
+                      fontWeight: "bold",
+                      fontSize: 13,
+                      wordBreak: "break-word",
+                    }}
+                  >
                     USERNAME |{" "}
                     <span
                       style={{
@@ -395,14 +460,29 @@ export default function ShoppingCart() {
                       fontWeight: "bold",
                       fontSize: 16,
                       margin: "7px 0 3px",
+                      wordBreak: "break-word",
                     }}
                   >
                     {c.title}
                   </div>
                 </div>
                 {/* Status & Price */}
-                <div style={{ textAlign: "right", minWidth: 120 }}>
-                  <div style={{ fontSize: 11, color: "#999" }}>
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "flex-end",
+                    gap: "4px",
+                    flexShrink: 0,
+                  }}
+                >
+                  <div
+                    style={{
+                      fontSize: 11,
+                      color: "#999",
+                      whiteSpace: "nowrap",
+                    }}
+                  >
                     STATUS:
                     <span
                       style={{
@@ -413,29 +493,28 @@ export default function ShoppingCart() {
                     >
                       {c.status}
                     </span>
-                    <span
-                      style={{
-                        fontWeight: "bold",
-                        fontSize: 18,
-                        marginLeft: 32,
-                        color: "#111",
-                      }}
-                    >
-                      ₱
-                      {c.price.toLocaleString("en-PH", {
-                        minimumFractionDigits: 2,
-                      })}
-                    </span>
                   </div>
+                  <span
+                    style={{
+                      fontWeight: "bold",
+                      fontSize: 18,
+                      color: "#111",
+                      whiteSpace: "nowrap",
+                    }}
+                  >
+                    ₱
+                    {c.price.toLocaleString("en-PH", {
+                      minimumFractionDigits: 2,
+                    })}
+                  </span>
                 </div>
                 {/* Arrow icon */}
                 <div
                   style={{
-                    marginLeft: 16,
                     display: "flex",
                     alignItems: "center",
-                    height: "100%",
                     pointerEvents: "auto",
+                    flexShrink: 0,
                   }}
                 >
                   <span
