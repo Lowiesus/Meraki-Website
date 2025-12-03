@@ -1,23 +1,6 @@
 import React, { useState, useEffect } from "react";
+import cartPanel from "/Cart_Panel.png";
 
-function Header() {
-  return (
-    <div
-      style={{
-        background: "#0F4786",
-        color: "#fff",
-        fontWeight: "bold",
-        padding: "14px 20px",
-        fontSize: 21,
-        letterSpacing: "2px",
-      }}
-    >
-      MERAKI SHOPPING CART
-    </div>
-  );
-}
-
-// Dummy commission progress data by order id
 const mockProgressHistory = {
   1: [
     {
@@ -73,7 +56,6 @@ const mockProgressHistory = {
   ],
 };
 
-// Status colors
 const statusColors = {
   ONGOING: "#0080FF",
   "AWAITING PAYMENT": "#FFC300",
@@ -81,7 +63,6 @@ const statusColors = {
   CANCELLED: "#FF0000",
 };
 
-// Dummy commissions data if backend is not available
 const dummyCommissions = [
   {
     id: 1,
@@ -121,7 +102,6 @@ const dummyCommissions = [
   },
 ];
 
-// Order details (with progress history)
 function OrderDetails({ order }) {
   const [expanded, setExpanded] = useState(false);
   const progress = mockProgressHistory[order.id] || [];
@@ -133,153 +113,190 @@ function OrderDetails({ order }) {
   return (
     <div
       style={{
-        background: "#fff",
-        boxShadow: "0 2px 8px rgba(22,110,219,0.08)",
-        borderRadius: 20,
-        padding: "20px",
-        margin: "8px 0 24px 0",
-        maxWidth: "70%",
-        border: "1.5px solid #91bbf0",
+        background: "#ffffff",
+        border: "1px solid #e9e9e9ff",
+        borderRadius: 14,
+        padding: 20,
+        margin: "12px 0 24px 0",
+        boxShadow: "0 12px 30px rgba(15,47,91,0.06)",
         boxSizing: "border-box",
       }}
     >
-      <div
-        style={{
-          color: "#005cbf",
-          fontWeight: 700,
-          fontSize: "clamp(16px, 4vw, 22px)",
-          marginBottom: 0,
-          letterSpacing: 1,
-        }}
-      >
-        ORDER DETAILS
+      <div style={{ marginBottom: 8 }}>
+        <div
+          style={{
+            color: "#0F4786",
+            fontWeight: 800,
+            fontSize: 20,
+            letterSpacing: 1,
+          }}
+        >
+          ORDER DETAILS
+        </div>
+        <div style={{ fontSize: 12, color: "#94a3b8", marginTop: 6 }}>
+          ORDER# {order.orderNo}
+        </div>
       </div>
-      <div
-        style={{
-          fontSize: 13,
-          color: "#888",
-          margin: "3px 0 10px",
-          wordBreak: "break-word",
-        }}
-      >
-        ORDER#: {order.orderNo}
-      </div>
-      <div
-        style={{
-          fontWeight: "bold",
-          fontSize: 16,
-          marginBottom: 2,
-          wordBreak: "break-word",
-        }}
-      >
-        COMMISSION TYPE:{" "}
-        <span style={{ fontWeight: "normal" }}>{order.type}</span>
-      </div>
-      <div style={{ marginBottom: 15, marginTop: 6, wordBreak: "break-word" }}>
-        COMMISSIONER:{" "}
-        <span style={{ color: "#005cbf", fontWeight: "bold" }}>
-          CLIENT_USERNAME
-        </span>{" "}
-        | <span style={{ color: "#888" }}>@client_username</span>
-        <span style={{ marginLeft: 16, color: "#005cbf" }}>
-          <span
-            style={{ marginRight: 8, fontSize: 19, verticalAlign: "middle" }}
-          >
-            ✉️
+
+      <div style={{ marginTop: 6, marginBottom: 10 }}>
+        <div
+          style={{
+            fontSize: 13,
+            color: "#0F4786",
+            fontWeight: 800,
+            marginBottom: 8,
+          }}
+        >
+          COMMISSION TYPE:{" "}
+          <span style={{ fontWeight: 600, color: "#0b2b4a" }}>
+            {order.type}
           </span>
-          <span style={{ fontSize: 19, verticalAlign: "middle" }}>🔔</span>
-        </span>
+        </div>
+
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 12,
+            color: "#667085",
+            marginBottom: 12,
+          }}
+        >
+          <div style={{ fontWeight: 700, color: "#0f3a6a" }}>COMMISSIONER:</div>
+          <div style={{ color: "#0b66b2", fontWeight: 700 }}>
+            CLIENT_USERNAME
+          </div>
+          <div style={{ color: "#94a3b8" }}>|</div>
+          <div style={{ color: "#94a3b8" }}>@username</div>
+
+          <div style={{ marginLeft: "auto", display: "flex", gap: 8 }}>
+            <button
+              aria-label="message"
+              style={{
+                height: 36,
+                width: 36,
+                borderRadius: 8,
+                border: "1px solid rgba(15,47,91,0.05)",
+                background: "#fff",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                color: "#0f66c2",
+                cursor: "pointer",
+              }}
+            >
+              ✉️
+            </button>
+            <button
+              aria-label="notify"
+              style={{
+                height: 36,
+                width: 36,
+                borderRadius: 8,
+                border: "1px solid rgba(15,47,91,0.05)",
+                background: "#fff",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                color: "#0f66c2",
+                cursor: "pointer",
+              }}
+            >
+              🔔
+            </button>
+          </div>
+        </div>
       </div>
+
       <div
         style={{
-          border: "2px solid #96beff",
-          borderRadius: 13,
-          background: "#fafdff",
-          padding: "14px 18px",
+          position: "relative",
+          borderRadius: 12,
+          padding: 14,
+          background: "#fbfdff",
+          border: "2px solid #cfe6ff",
         }}
       >
-        <div style={{ fontWeight: "700", fontSize: 16, marginBottom: 6 }}>
+        <div style={{ fontWeight: 700, color: "#0b5fb8", marginBottom: 8 }}>
           Commission Progress
         </div>
+
         {progress.length > 1 && (
           <div
             onClick={() => setExpanded((v) => !v)}
             style={{
-              color: "#4092f1",
+              color: "#3f8fe9",
               cursor: "pointer",
               fontSize: 13,
-              marginBottom: 10,
+              marginBottom: 8,
               userSelect: "none",
-              fontWeight: 500,
+              fontWeight: 600,
             }}
           >
             - CLICK TO VIEW PROGRESS HISTORY -
           </div>
         )}
-        <div style={{ marginLeft: 10, maxWidth: "100%", overflow: "hidden" }}>
+
+        <div
+          style={{
+            position: "absolute",
+            top: 16,
+            right: 16,
+            width: 8,
+            height: 8,
+            borderRadius: 8,
+            background: "#ff4bb6",
+          }}
+        />
+
+        <div style={{ marginTop: 6 }}>
           {visible.map((item, idx) => (
             <div
               key={item.id}
               style={{
-                marginBottom: expanded ? 16 : 8,
                 display: "flex",
-                alignItems: "flex-start",
-                fontSize: 15,
-                flexWrap: "wrap",
-                gap: "6px",
-                wordBreak: "break-word",
+                alignItems: "center",
+                gap: 10,
+                padding: "8px 6px",
               }}
             >
               <span
                 style={{
-                  minWidth: 12,
-                  minHeight: 12,
                   width: 12,
                   height: 12,
+                  borderRadius: 12,
                   background:
-                    idx === visible.length - 1 ? "#34ba47" : "#bbbbbb",
-                  borderRadius: "50%",
+                    idx === visible.length - 1 ? "#34ba47" : "#bfc6d6",
                   display: "inline-block",
-                  marginRight: 9,
-                  marginTop: 4,
                   flexShrink: 0,
                 }}
               />
-              <span style={{ fontWeight: "bold", flexShrink: 0 }}>
-                {item.seller}
-              </span>
-              <span
-                style={{
-                  color: "#2d2d2d",
-                  fontWeight: 400,
-                  flex: "1 1 auto",
-                  minWidth: "120px",
-                }}
-              >
-                {item.message}
-              </span>
-              <span
-                style={{
-                  fontSize: 12,
-                  color: "#888",
-                  flexShrink: 0,
-                  whiteSpace: "nowrap",
-                }}
-              >
-                {item.date}
-              </span>
+              <div style={{ flex: "1 1 auto" }}>
+                <div
+                  style={{ fontWeight: 700, color: "#0b3a6a", marginBottom: 4 }}
+                >
+                  {item.seller}{" "}
+                  <span style={{ fontWeight: 600, color: "#2b5f99" }}>
+                    has sent updates on the commission
+                  </span>
+                </div>
+                <div style={{ fontSize: 12, color: "#94a3b8" }}>
+                  {item.date}
+                </div>
+              </div>
+
               {item.viewable && (
-                <span
+                <div
+                  onClick={() => alert("Show details for this update.")}
                   style={{
-                    color: "#4092f1",
+                    color: "#3f8fe9",
                     fontSize: 13,
                     cursor: "pointer",
                     flexShrink: 0,
                   }}
-                  onClick={() => alert("Show details for this update.")}
                 >
                   - view here -
-                </span>
+                </div>
               )}
             </div>
           ))}
@@ -289,257 +306,796 @@ function OrderDetails({ order }) {
   );
 }
 
-// Main shopping cart with commissions
 export default function ShoppingCart() {
   const [commissions, setCommissions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [checkedIds, setCheckedIds] = useState([]);
   const [openOrderId, setOpenOrderId] = useState(null);
+  const [pressedId, setPressedId] = useState(null);
+  const [activeTab, setActiveTab] = useState("card");
+  const [flowStep, setFlowStep] = useState("form");
 
-  // Load commissions from backend (simulate) or use dummy if offline
   useEffect(() => {
-    // To use real backend, replace this with fetch("/api/commissions")
     setTimeout(() => {
       setCommissions(dummyCommissions);
       setLoading(false);
     }, 500);
   }, []);
 
-  // Checkbox for payment selection
   const handleCheck = (id, checked) => {
     setCheckedIds((current) =>
       checked ? [...current, id] : current.filter((cid) => cid !== id)
     );
   };
 
-  // Select single order (for details expansion)
   const handleSelectOrder = (order) => {
     setOpenOrderId(order.id === openOrderId ? null : order.id);
   };
 
+  const subtotal = commissions
+    .filter((c) => checkedIds.includes(c.id))
+    .reduce((s, c) => s + (c.price || 0), 0);
+
+  function handlePaymentSubmit(e) {
+    e.preventDefault();
+    if (activeTab === "cod") {
+      setFlowStep("checkoutSuccess");
+    } else if (activeTab === "card") {
+      setFlowStep("otp");
+    } else if (activeTab === "dragonpay") {
+      setFlowStep("success");
+    }
+  }
+  function handleOtpSuccess() {
+    setFlowStep("success");
+  }
+  function handleDragonpayContinue() {
+    setFlowStep("dragonpay");
+  }
+  function handleReturnHome() {
+    setFlowStep("form");
+    setActiveTab("card");
+    setCheckedIds([]);
+  }
+
   return (
     <div
       style={{
-        background: "#eaf2fe",
+        background: "#ffffff",
         minHeight: "100vh",
-        paddingBottom: "40px",
         width: "100%",
         overflowX: "hidden",
         boxSizing: "border-box",
       }}
-      className="ml-20 lg:ml-72"
+      className="relative"
     >
-      <Header />
+      <div className="flex">
+        <section
+          role="main"
+          className="flex-1 ml-20 lg:ml-72 p-6 pr-0 lg:pr-[396px]"
+          style={{ boxSizing: "border-box" }}
+        >
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 12,
+              marginBottom: 18,
+            }}
+          >
+            <div
+              style={{
+                width: 4,
+                height: 28,
+                background: "#0F4786",
+                borderRadius: 4,
+              }}
+            />
+            <div>
+              <div
+                style={{
+                  color: "#0F4786",
+                  fontWeight: 700,
+                  fontSize: 16,
+                  letterSpacing: 1,
+                }}
+              >
+                MERAKI SHOPPING CART
+              </div>
+              <div style={{ height: 6 }} />
+            </div>
+          </div>
+
+          <div
+            style={{
+              display: "flex",
+              gap: 24,
+              alignItems: "center",
+              borderBottom: "1px solid #e6eef8",
+              paddingBottom: 12,
+              marginBottom: 18,
+            }}
+          >
+            <button
+              type="button"
+              onClick={() => {}}
+              style={{
+                color: "#0F4786",
+                fontWeight: 700,
+                background: "transparent",
+                border: "none",
+                padding: 0,
+                borderBottom: "3px solid #0F4786",
+                height: 36,
+                textTransform: "uppercase",
+                fontSize: 13,
+                letterSpacing: 1,
+                cursor: "pointer",
+              }}
+            >
+              COMMISSIONS
+            </button>
+            <button
+              type="button"
+              onClick={() => {}}
+              style={{
+                color: "#94a3b8",
+                background: "transparent",
+                border: "none",
+                padding: 0,
+                height: 36,
+                textTransform: "uppercase",
+                fontSize: 13,
+                letterSpacing: 1,
+                cursor: "pointer",
+              }}
+            >
+              PRODUCTS
+            </button>
+          </div>
+
+          <div
+            style={{ margin: "0 4px", maxWidth: "100%", overflow: "hidden" }}
+          >
+            {loading ? (
+              <div>Loading...</div>
+            ) : (
+              commissions.map((c) => (
+                <div
+                  key={c.id}
+                  style={{ maxWidth: "100%", overflow: "hidden" }}
+                >
+                  <div
+                    className={`commission-card ${c.status.toLowerCase()} ${
+                      checkedIds.includes(c.id) ? "checked" : ""
+                    }`}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      background:
+                        c.status === "CANCELLED" ? "#f3f4f6" : "#FFFFFF",
+                      border: "1px solid #e6eef8",
+                      borderRadius: 14,
+                      padding: 18,
+                      marginBottom: 16,
+                      position: "relative",
+                      cursor: "pointer",
+                      gap: 16,
+                      boxShadow: "0 6px 18px rgba(15,47,91,0.04)",
+                      boxSizing: "border-box",
+                    }}
+                    onClick={() => handleSelectOrder(c)}
+                  >
+                    <div
+                      style={{ display: "flex", alignItems: "center", gap: 14 }}
+                    >
+                      {c.status === "AWAITING PAYMENT" ? (
+                        <input
+                          type="checkbox"
+                          checked={checkedIds.includes(c.id)}
+                          onChange={(e) => {
+                            e.stopPropagation();
+                            handleCheck(c.id, e.target.checked);
+                          }}
+                          className="card-checkbox"
+                          style={{
+                            width: 22,
+                            height: 22,
+                            flexShrink: 0,
+                            borderRadius: 6,
+                            accentColor: "#0F4786",
+                          }}
+                        />
+                      ) : (
+                        <div style={{ width: 22, height: 22 }} />
+                      )}
+
+                      <div
+                        style={{
+                          width: 72,
+                          height: 72,
+                          borderRadius: 10,
+                          background: "#ff3b3b",
+                          display: "flex",
+                          justifyContent: "center",
+                          alignItems: "center",
+                          flexShrink: 0,
+                        }}
+                      >
+                        <span
+                          style={{
+                            color: "#fff",
+                            fontWeight: "700",
+                            fontSize: 20,
+                            letterSpacing: 0.5,
+                          }}
+                        >
+                          {c.sellerUsername[0].toUpperCase()}
+                        </span>
+                      </div>
+
+                      <div style={{ minWidth: 0 }}>
+                        <div
+                          style={{
+                            fontSize: 12,
+                            color: "#0f3a6a",
+                            fontWeight: 700,
+                            marginBottom: 6,
+                          }}
+                        >
+                          USERNAME{" "}
+                          <span
+                            style={{
+                              color: "#94a3b8",
+                              fontWeight: 500,
+                              marginLeft: 8,
+                            }}
+                          >
+                            @{c.sellerUsername}
+                          </span>
+                        </div>
+
+                        <div
+                          style={{
+                            fontSize: 16,
+                            fontWeight: 700,
+                            color: "#0b2b4a",
+                            marginBottom: 4,
+                            whiteSpace: "nowrap",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                            maxWidth: 420,
+                          }}
+                        >
+                          {c.title}
+                        </div>
+
+                        <div style={{ fontSize: 12, color: "#667085" }}>
+                          {c.type}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div
+                      style={{
+                        display: "flex",
+                        flexDirection: "column",
+                        alignItems: "flex-end",
+                        gap: 8,
+                        minWidth: 140,
+                      }}
+                    >
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 8,
+                        }}
+                      >
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleSelectOrder(c);
+                          }}
+                          onMouseDown={() => setPressedId(c.id)}
+                          onMouseUp={() => setPressedId(null)}
+                          onMouseLeave={() => setPressedId(null)}
+                          aria-label="toggle details"
+                          style={{
+                            background: "transparent",
+                            border: "none",
+                            color: "#0F4786",
+                            cursor: "pointer",
+                            padding: 6,
+                            fontSize: 18,
+                            transform: `${
+                              openOrderId === c.id
+                                ? "rotate(180deg)"
+                                : "rotate(0deg)"
+                            } ${
+                              pressedId === c.id ? "scale(0.92)" : "scale(1)"
+                            }`,
+                            transition: "transform 180ms ease, color 120ms",
+                            flexShrink: 0,
+                          }}
+                        >
+                          ▼
+                        </button>
+
+                        <div
+                          style={{
+                            fontSize: 12,
+                            color: "#94a3b8",
+                            textAlign: "right",
+                          }}
+                        >
+                          STATUS:
+                          <span
+                            style={{
+                              marginLeft: 8,
+                              color: statusColors[c.status] || "#888",
+                              fontWeight: 800,
+                              fontSize: 12,
+                            }}
+                          >
+                            {c.status}
+                          </span>
+                        </div>
+                      </div>
+
+                      <div
+                        style={{
+                          fontWeight: 800,
+                          fontSize: 18,
+                          color: "#0b2b4a",
+                        }}
+                      >
+                        ₱
+                        {c.price.toLocaleString("en-PH", {
+                          minimumFractionDigits: 2,
+                        })}
+                      </div>
+                    </div>
+                  </div>
+
+                  {openOrderId === c.id && <OrderDetails order={c} />}
+                </div>
+              ))
+            )}
+          </div>
+        </section>
+
+        <div
+          className="hidden lg:block fixed right-0 top-0 h-screen w-[371px] border-l border-[#e2e8f0] overflow-auto"
+          style={{
+            backgroundImage: `url(${cartPanel})`,
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+            backgroundRepeat: "no-repeat",
+            backgroundColor: "#ffffff",
+          }}
+        >
+          <div
+            style={{
+              height: "100%",
+              width: "100%",
+              background:
+                "linear-gradient(180deg, rgba(255,255,255,0.0) 0%, rgba(255,255,255,0.92) 60%)",
+            }}
+          >
+            <div
+              style={{
+                padding: 24,
+                display: "flex",
+                justifyContent: "center",
+                backgroundImage: `url(${cartPanel})`,
+                backgroundSize: "cover",
+                backgroundPosition: "center",
+                backgroundRepeat: "no-repeat",
+                backgroundColor: "#ffffff",
+                height: "100%",
+              }}
+            >
+              <div
+                style={{
+                  width: 320,
+                  position: "sticky",
+                  top: 64,
+                  background: "rgba(255,255,255,0.6)",
+                  borderRadius: 12,
+                  boxShadow: "0 8px 24px rgba(16,24,40,0.08)",
+                  padding: 14,
+                  border: "1px solid rgba(15,47,91,0.04)",
+                }}
+              >
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    marginBottom: 12,
+                  }}
+                >
+                  <div style={{ fontWeight: 700, color: "#0f3a6a" }}>
+                    Payment Details
+                  </div>
+                  <div
+                    style={{
+                      width: 36,
+                      height: 36,
+                      background: "#ff3b3b",
+                      borderRadius: 8,
+                    }}
+                  />
+                </div>
+
+                <PaymentPanel
+                  activeTab={activeTab}
+                  setActiveTab={setActiveTab}
+                  flowStep={flowStep}
+                  setFlowStep={setFlowStep}
+                  onSubmit={handlePaymentSubmit}
+                  onOtpSuccess={handleOtpSuccess}
+                  onDragonpayContinue={handleDragonpayContinue}
+                  onClose={handleReturnHome}
+                  subtotal={subtotal}
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function PaymentPanel({
+  activeTab,
+  setActiveTab,
+  flowStep,
+  setFlowStep,
+  onSubmit,
+  onOtpSuccess,
+  onDragonpayContinue,
+  onClose,
+  subtotal,
+}) {
+  if (flowStep === "checkoutSuccess") {
+    return <CheckoutSuccess onClose={onClose} />;
+  }
+  if (flowStep === "otp") {
+    return <VerifyOtp onVerify={onOtpSuccess} />;
+  }
+  if (flowStep === "success") {
+    if (activeTab === "dragonpay") {
+      return (
+        <PaymentSuccess
+          onClose={onDragonpayContinue}
+          buttonLabel="CONTINUE TO DRAGONPAY"
+        />
+      );
+    }
+    return <PaymentSuccess onClose={onClose} />;
+  }
+  if (flowStep === "dragonpay") {
+    if (typeof window !== "undefined") {
+      window.location.href = "https://dragonpay.ph/";
+    }
+    return (
+      <div style={{ textAlign: "center", padding: 8 }}>
+        Redirecting to DragonPay...
+      </div>
+    );
+  }
+
+  return (
+    <div>
+      <div style={{ fontSize: 12, color: "#6b7280", marginBottom: 10 }}>
+        Card type
+      </div>
+
+      <div
+        className="checkout-tabs"
+        style={{
+          display: "flex",
+          margin: "10px 0",
+          gap: 8,
+          flexWrap: "wrap",
+          justifyContent: "center",
+        }}
+      >
+        <TabButton
+          active={activeTab === "cod"}
+          onClick={() => setActiveTab("cod")}
+        >
+          COD Payment
+        </TabButton>
+        <TabButton
+          active={activeTab === "card"}
+          onClick={() => setActiveTab("card")}
+        >
+          Online Card Payment
+        </TabButton>
+        <TabButton
+          active={activeTab === "dragonpay"}
+          onClick={() => setActiveTab("dragonpay")}
+        >
+          Pay Via Dragonpay
+        </TabButton>
+      </div>
+
+      {activeTab === "card" && (
+        <CardForm onSubmit={onSubmit} subtotal={subtotal} />
+      )}
+      {activeTab === "cod" && (
+        <CODForm onSubmit={onSubmit} subtotal={subtotal} />
+      )}
+      {activeTab === "dragonpay" && (
+        <DragonpayForm onSubmit={onSubmit} subtotal={subtotal} />
+      )}
+    </div>
+  );
+}
+
+function TabButton({ active, children, onClick }) {
+  return (
+    <button
+      type="button"
+      style={{
+        background: active ? "#eee" : "#fff",
+        border: active ? "2px solid #4CC790" : "1px solid #ccc",
+        color: active ? "#4CC790" : "#888",
+        padding: "8px 12px",
+        borderRadius: 6,
+        cursor: active ? "default" : "pointer",
+        fontWeight: active ? "bold" : "normal",
+        outline: "none",
+        fontSize: "14px",
+        whiteSpace: "nowrap",
+      }}
+      onClick={active ? undefined : onClick}
+      disabled={active}
+    >
+      {children}
+    </button>
+  );
+}
+
+function CardForm({ onSubmit, subtotal }) {
+  return (
+    <form onSubmit={onSubmit}>
+      <div style={{ margin: "8px 0", fontSize: "14px" }}>
+        <span style={{ fontWeight: "bold" }}>Card type</span>
+        <span style={{ marginLeft: 10 }}>
+          <span style={{ fontWeight: "bold", margin: "0 6px" }}>
+            MasterCard
+          </span>
+          <span style={{ fontWeight: "bold", margin: "0 6px" }}>Visa</span>
+          <span style={{ fontWeight: "bold", margin: "0 6px" }}>RuPay</span>
+        </span>
+      </div>
+      <input
+        type="text"
+        placeholder="Name on card"
+        style={inputStyle}
+        required
+      />
+      <input
+        type="text"
+        placeholder="1111 2222 3333 4444"
+        style={inputStyle}
+        maxLength={19}
+        required
+      />
+      <div style={{ display: "flex", gap: "8px" }}>
+        <input type="text" placeholder="mm/yy" style={inputStyle} required />
+        <input
+          type="text"
+          placeholder="123"
+          style={inputStyle}
+          maxLength={4}
+          required
+        />
+      </div>
+      <Summary subtotal={subtotal} />
+      <button className="confirm-btn" type="submit" style={buttonStyle}>
+        ₱ CHECKOUT
+      </button>
+    </form>
+  );
+}
+
+function CODForm({ onSubmit, subtotal }) {
+  return (
+    <form onSubmit={onSubmit}>
+      <input type="text" placeholder="Address" style={inputStyle} required />
+      <input type="text" placeholder="Region" style={inputStyle} required />
+      <div style={{ display: "flex", gap: "8px" }}>
+        <input
+          type="text"
+          placeholder="Postal Code"
+          style={inputStyle}
+          required
+        />
+        <input
+          type="text"
+          placeholder="City Name"
+          style={inputStyle}
+          required
+        />
+      </div>
+      <input type="text" placeholder="(+63)" style={inputStyle} required />
+      <Summary subtotal={subtotal} />
+      <button className="confirm-btn" type="submit" style={buttonStyle}>
+        ₱ CHECKOUT
+      </button>
+    </form>
+  );
+}
+
+function DragonpayForm({ onSubmit, subtotal }) {
+  return (
+    <form onSubmit={onSubmit}>
+      <Summary subtotal={subtotal} />
+      <button className="confirm-btn" type="submit" style={buttonStyle}>
+        ₱ CONTINUE TO DRAGONPAY
+      </button>
+    </form>
+  );
+}
+
+function Summary({ subtotal = 0 }) {
+  const shipping = 0;
+  const total = subtotal + shipping;
+  return (
+    <div
+      className="checkout-summary"
+      style={{ margin: "12px 0", fontSize: "14px" }}
+    >
       <div
         style={{
           display: "flex",
-          gap: 32,
-          margin: "28px 0 13px 20px",
-          fontSize: 17,
-          fontWeight: 500,
-          flexWrap: "wrap",
+          justifyContent: "space-between",
+          marginBottom: "8px",
         }}
       >
-        <span
-          style={{
-            color: "#0080FF",
-            borderBottom: "2px solid #0080FF",
-            paddingBottom: 4,
-          }}
-        >
-          COMMISSIONS
+        <span>Subtotal</span>
+        <span>
+          ₱{subtotal.toLocaleString("en-PH", { minimumFractionDigits: 2 })}
         </span>
-        <span style={{ color: "#888" }}>PRODUCTS</span>
-        <span style={{ color: "#888" }}>COMPLETED</span>
       </div>
       <div
         style={{
-          margin: "0 20px",
-          maxWidth: "calc(100% - 40px)",
-          overflow: "hidden",
+          display: "flex",
+          justifyContent: "space-between",
+          marginBottom: "8px",
         }}
       >
-        {loading ? (
-          <div>Loading...</div>
-        ) : (
-          commissions.map((c) => (
-            <div key={c.id} style={{ maxWidth: "100%", overflow: "hidden" }}>
-              <div
-                className={`commission-card ${c.status.toLowerCase()} ${
-                  checkedIds.includes(c.id) ? "checked" : ""
-                }`}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  background: c.status === "CANCELLED" ? "#eaeaea" : "#FFF",
-                  border: "1px solid #ddd",
-                  borderRadius: 12,
-                  boxShadow: "0 2px 8px rgba(0,0,0,0.04)",
-                  padding: "16px 12px",
-                  marginBottom: 12,
-                  position: "relative",
-                  cursor: "pointer",
-                  flexWrap: "wrap",
-                  gap: "12px",
-                  maxWidth: "100%",
-                  boxSizing: "border-box",
-                }}
-                // Main display (click to open order details)
-                onClick={() => handleSelectOrder(c)}
-              >
-                {/* Selection for checkout */}
-                {c.status === "AWAITING PAYMENT" && (
-                  <input
-                    type="checkbox"
-                    checked={checkedIds.includes(c.id)}
-                    onChange={(e) => {
-                      e.stopPropagation();
-                      handleCheck(c.id, e.target.checked);
-                    }}
-                    className="card-checkbox"
-                    style={{
-                      width: 18,
-                      height: 18,
-                      flexShrink: 0,
-                    }}
-                  />
-                )}
-
-                {/* Seller's avatar (placeholder if not available) */}
-                <div
-                  style={{
-                    width: 48,
-                    height: 48,
-                    borderRadius: 8,
-                    background: "#FF0000",
-                    display: "flex",
-                    justifyContent: "center",
-                    alignItems: "center",
-                    flexShrink: 0,
-                  }}
-                >
-                  <span
-                    style={{
-                      color: "#fff",
-                      fontWeight: "bold",
-                      fontSize: 19,
-                    }}
-                  >
-                    {c.sellerUsername[0].toUpperCase()}
-                  </span>
-                </div>
-                {/* Seller info and commission */}
-                <div
-                  style={{
-                    flex: "1 1 auto",
-                    minWidth: "150px",
-                    maxWidth: "100%",
-                    overflow: "hidden",
-                  }}
-                >
-                  <div
-                    style={{
-                      fontWeight: "bold",
-                      fontSize: 13,
-                      wordBreak: "break-word",
-                    }}
-                  >
-                    USERNAME |{" "}
-                    <span
-                      style={{
-                        color: "#888",
-                        fontWeight: "normal",
-                        fontSize: 12,
-                      }}
-                    >
-                      @{c.sellerUsername}
-                    </span>
-                  </div>
-                  <div
-                    style={{
-                      fontWeight: "bold",
-                      fontSize: 16,
-                      margin: "7px 0 3px",
-                      wordBreak: "break-word",
-                    }}
-                  >
-                    {c.title}
-                  </div>
-                </div>
-                {/* Status & Price */}
-                <div
-                  style={{
-                    display: "flex",
-                    flexDirection: "column",
-                    alignItems: "flex-end",
-                    gap: "4px",
-                    flexShrink: 0,
-                  }}
-                >
-                  <div
-                    style={{
-                      fontSize: 11,
-                      color: "#999",
-                      whiteSpace: "nowrap",
-                    }}
-                  >
-                    STATUS:
-                    <span
-                      style={{
-                        marginLeft: 6,
-                        color: statusColors[c.status] || "#888",
-                        fontWeight: "bold",
-                      }}
-                    >
-                      {c.status}
-                    </span>
-                  </div>
-                  <span
-                    style={{
-                      fontWeight: "bold",
-                      fontSize: 18,
-                      color: "#111",
-                      whiteSpace: "nowrap",
-                    }}
-                  >
-                    ₱
-                    {c.price.toLocaleString("en-PH", {
-                      minimumFractionDigits: 2,
-                    })}
-                  </span>
-                </div>
-                {/* Arrow icon */}
-                <div
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    pointerEvents: "auto",
-                    flexShrink: 0,
-                  }}
-                >
-                  <span
-                    style={{
-                      fontSize: 22,
-                      color: "#0080FF",
-                      cursor: "pointer",
-                      transform: openOrderId === c.id ? "rotate(180deg)" : "",
-                      transition: "transform 0.19s",
-                    }}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleSelectOrder(c);
-                    }}
-                  >
-                    ▼
-                  </span>
-                </div>
-              </div>
-              {/* Expanded details (only below selected row) */}
-              {openOrderId === c.id && <OrderDetails order={c} />}
-            </div>
-          ))
-        )}
+        <span>Shipping</span>
+        <span>
+          ₱{shipping.toLocaleString("en-PH", { minimumFractionDigits: 2 })}
+        </span>
       </div>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          fontWeight: "bold",
+          marginTop: "12px",
+          paddingTop: "12px",
+          borderTop: "1px solid #ddd",
+        }}
+      >
+        <span>Total (Tax incl.)</span>
+        <span>
+          ₱{total.toLocaleString("en-PH", { minimumFractionDigits: 2 })}
+        </span>
+      </div>
+    </div>
+  );
+}
+
+const inputStyle = {
+  width: "100%",
+  padding: "10px",
+  margin: "8px 0",
+  borderRadius: 6,
+  border: "1px solid #ccc",
+  fontSize: "14px",
+  boxSizing: "border-box",
+};
+
+const buttonStyle = {
+  background: "#FFD96A",
+  color: "#333",
+  border: "none",
+  borderRadius: 20,
+  padding: "12px 0",
+  width: "100%",
+  fontWeight: "bold",
+  fontSize: "16px",
+  marginTop: "12px",
+  cursor: "pointer",
+  transition: "background 0.2s",
+};
+
+function CheckoutSuccess({ onClose }) {
+  return (
+    <div
+      style={{
+        background: "#fff",
+        borderRadius: "12px",
+        padding: "24px",
+        width: "100%",
+        textAlign: "center",
+        boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+      }}
+    >
+      <h2 style={{ fontSize: "20px", marginBottom: "8px", color: "#4CC790" }}>
+        Checkout Success!
+      </h2>
+      <p style={{ marginBottom: "12px", color: "#666" }}>
+        Your order has been processed and confirmed.
+      </p>
+      <button
+        onClick={onClose}
+        style={{ ...buttonStyle, background: "#4CC790", color: "#fff" }}
+      >
+        OK
+      </button>
+    </div>
+  );
+}
+
+function VerifyOtp({ onVerify }) {
+  return (
+    <div
+      style={{
+        background: "#fff",
+        borderRadius: "12px",
+        padding: "24px",
+        width: "100%",
+        textAlign: "center",
+        boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+      }}
+    >
+      <h2 style={{ fontSize: "20px", marginBottom: "12px" }}>Verify OTP</h2>
+      <input type="text" placeholder="Enter OTP" style={inputStyle} />
+      <button
+        onClick={onVerify}
+        style={{ ...buttonStyle, background: "#4CC790", color: "#fff" }}
+      >
+        Verify
+      </button>
+    </div>
+  );
+}
+
+function PaymentSuccess({ onClose, buttonLabel = "CONFIRM PAYMENT" }) {
+  return (
+    <div
+      style={{
+        background: "#fff",
+        borderRadius: "12px",
+        padding: "24px",
+        width: "100%",
+        textAlign: "center",
+        boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+      }}
+    >
+      <h2 style={{ fontSize: "20px", marginBottom: "12px", color: "#4CC790" }}>
+        Payment Success!
+      </h2>
+      <p style={{ marginBottom: "12px", color: "#666" }}>
+        Your payment has been confirmed.
+      </p>
+      <button
+        onClick={onClose}
+        style={{ ...buttonStyle, background: "#4CC790", color: "#fff" }}
+      >
+        {buttonLabel}
+      </button>
     </div>
   );
 }
