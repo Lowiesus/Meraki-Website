@@ -46,6 +46,9 @@ const PostCard = ({ post }) => {
     ? new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(Number(priceValue))
     : null;
 
+  const titleValue = post?.listing?.name;
+  const formattedTitle = titleValue && String(titleValue).trim() ? String(titleValue).trim() : null;
+
   const toggleLike = () => {
     // optimistic UI
     const pid = post?._id || post?.id;
@@ -185,7 +188,7 @@ const PostCard = ({ post }) => {
         )}
       </div>
 
-      <div className="p-4">
+        <div className="p-4">
         <div className="flex items-center gap-4 mb-3">
           <button onClick={toggleLike} className="flex items-center gap-2">
             <Heart className={`w-5 h-5 ${liked ? 'text-red-500' : 'text-zinc-600'}`} />
@@ -208,6 +211,10 @@ const PostCard = ({ post }) => {
             )}
           </div>
         </div>
+
+        {formattedTitle && (
+          <div className="text-base font-semibold text-zinc-900 mb-1">{formattedTitle}</div>
+        )}
 
         <p className="text-sm text-zinc-800 mb-3">{caption}</p>
 
