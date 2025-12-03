@@ -1,12 +1,12 @@
 import cloudinary from "../lib/cloudinary.js";
-import Post from "../models/post.model.js";
 import Comment from "../models/comment.model.js";
+import Post from "../models/post.model.js";
 
 // Create a new post. Expects { caption, images: [base64Image,...] }
 export const createPost = async (req, res) => {
   try {
     const authorId = req.user._id || req.user.id;
-    const { caption, images } = req.body;
+    const { caption, images, listing } = req.body || {};
 
     // Server-side upload size limit (in bytes). Match frontend: 200 KB
     const MAX_BYTES = 200 * 1024;
@@ -42,10 +42,26 @@ export const createPost = async (req, res) => {
       }
     }
 
+    // Determine if this post is a listing
+    let kind = "post";
+    let listingData = undefined;
+    if (listing && (listing.name || listing.price || listing.type || listing.description)) {
+      kind = "listing";
+      listingData = {
+        name: listing.name || "",
+        type: listing.type || "",
+        price: typeof listing.price === "number" ? listing.price : (listing.price ? Number(listing.price) : undefined),
+        description: listing.description || "",
+        tags: Array.isArray(listing.tags) ? listing.tags.map(String) : [],
+      };
+    }
+
     const newPost = new Post({
       author: authorId,
       caption: caption || "",
       media: mediaUrls,
+      kind,
+      listing: listingData,
     });
 
     await newPost.save();
@@ -109,6 +125,33 @@ export const addComment = async (req, res) => {
     return res.status(201).json(populated);
   } catch (error) {
     console.error("Error in addComment:", error.message || error);
+    return res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+// Toggle like for a post by authenticated user
+export const toggleLike = async (req, res) => {
+  try {
+    const { id: postId } = req.params;
+    const userId = req.user && (req.user._id || req.user.id);
+    if (!userId) return res.status(401).json({ message: "Unauthorized" });
+
+    const post = await Post.findById(postId);
+    if (!post) return res.status(404).json({ message: "Post not found" });
+
+    const idx = post.likes.findIndex((u) => String(u) === String(userId));
+    if (idx >= 0) {
+      // already liked -> remove
+      post.likes.splice(idx, 1);
+    } else {
+      post.likes.push(userId);
+    }
+
+    await post.save();
+
+    return res.status(200).json({ likes: post.likes, likesCount: post.likes.length });
+  } catch (err) {
+    console.error("Error in toggleLike:", err.message || err);
     return res.status(500).json({ message: "Internal server error" });
   }
 };
