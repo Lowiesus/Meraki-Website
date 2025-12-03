@@ -8,13 +8,22 @@ import path from "path";
 import { fileURLToPath } from "url";
 
 // Load .env as early as possible so modules imported below (controllers, cloudinary, etc.) can read env vars.
-dotenv.config({ path: path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..", ".env") });
+dotenv.config({
+  path: path.resolve(
+    path.dirname(fileURLToPath(import.meta.url)),
+    "../..",
+    ".env"
+  ),
+});
 
 // Dynamic imports for modules that may read process.env on import time
 const { connectDB } = await import("./lib/db.js");
 const authRoutes = (await import("./routes/auth.route.js")).default;
 const messageRoutes = (await import("./routes/message.route.js")).default;
 const postsRoutes = (await import("./routes/post.route.js")).default;
+const orderRoutes = (await import("./routes/order.Route.js")).default;
+const orderDetailRoutes = (await import("./routes/orderDetail.route.js"))
+  .default;
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -47,7 +56,8 @@ app.use(
 app.use("/api/auth", authRoutes);
 app.use("/api/messages", messageRoutes);
 app.use("/api/posts", postsRoutes);
-
+app.use("/api/orders", orderRoutes);
+app.use("/api/order-details", orderDetailRoutes);
 
 if (process.env.NODE_ENV === "production") {
   app.use(express.static(path.join(__dirname, "../frontend/dist")));
@@ -82,7 +92,9 @@ async function start() {
         }
 
         const nextPort = currentPort + 1;
-        console.warn(`Port ${currentPort} in use, trying ${nextPort}... (attempt ${attempts}/${maxRetries})`);
+        console.warn(
+          `Port ${currentPort} in use, trying ${nextPort}... (attempt ${attempts}/${maxRetries})`
+        );
         currentPort = nextPort;
 
         // Try listening on the new port
@@ -90,7 +102,10 @@ async function start() {
           server.listen(currentPort);
         } catch (listenErr) {
           // If listen throws synchronously, log and let the 'error' handler manage retries
-          console.warn("Listen attempt failed, will retry via error handler:", listenErr.message || listenErr);
+          console.warn(
+            "Listen attempt failed, will retry via error handler:",
+            listenErr.message || listenErr
+          );
         }
       } else {
         console.error("Server error:", err);
