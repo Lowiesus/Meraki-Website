@@ -369,24 +369,3 @@ function Summary() {
     </div>
   );
 }
-
-// const inputStyle = {
-//   width: "100%",
-//   padding: "6px",
-//   margin: "6px 0",
-//   borderRadius: 4,
-//   border: "1px solid #ccc",
-//   fontSize: "1rem",
-// };
-
-// const buttonStyle = {
-//   background: "#FFD96A",
-//   color: "#333",
-//   border: "none",
-//   borderRadius: 20,
-//   padding: "12px 0",
-//   width: "100%",
-//   fontWeight: "bold",
-//   fontSize: "1.1rem",
-//   marginTop: "10px",
-// };
