@@ -47,13 +47,34 @@ const PostCard = ({ post }) => {
     : null;
 
   const toggleLike = () => {
-    if (liked) {
+    // optimistic UI
+    const pid = post?._id || post?.id;
+    if (!pid) return;
+
+    const previousLiked = liked;
+    const previousCount = likesCount;
+
+    if (previousLiked) {
       setLiked(false);
       setLikesCount((c) => Math.max(0, c - 1));
     } else {
       setLiked(true);
       setLikesCount((c) => c + 1);
     }
+
+    (async () => {
+      try {
+        await axiosInstance.post(`/posts/${pid}/like`);
+      } catch (err) {
+        // revert on error
+        setLiked(previousLiked);
+        setLikesCount(previousCount);
+        try {
+          const toast = (await import('react-hot-toast')).default;
+          toast.error(err?.response?.data?.message || 'Failed to update like');
+        } catch (e) {}
+      }
+    })();
   };
 
   const handleBuy = async (e) => {

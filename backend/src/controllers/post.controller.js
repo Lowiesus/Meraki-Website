@@ -128,3 +128,30 @@ export const addComment = async (req, res) => {
     return res.status(500).json({ message: "Internal server error" });
   }
 };
+
+// Toggle like for a post by authenticated user
+export const toggleLike = async (req, res) => {
+  try {
+    const { id: postId } = req.params;
+    const userId = req.user && (req.user._id || req.user.id);
+    if (!userId) return res.status(401).json({ message: "Unauthorized" });
+
+    const post = await Post.findById(postId);
+    if (!post) return res.status(404).json({ message: "Post not found" });
+
+    const idx = post.likes.findIndex((u) => String(u) === String(userId));
+    if (idx >= 0) {
+      // already liked -> remove
+      post.likes.splice(idx, 1);
+    } else {
+      post.likes.push(userId);
+    }
+
+    await post.save();
+
+    return res.status(200).json({ likes: post.likes, likesCount: post.likes.length });
+  } catch (err) {
+    console.error("Error in toggleLike:", err.message || err);
+    return res.status(500).json({ message: "Internal server error" });
+  }
+};
