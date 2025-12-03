@@ -17,7 +17,7 @@ const orderDetailSchema = new mongoose.Schema(
       required: true,
       min: 1,
     },
-    price: {
+    unitPrice: {
       type: Number,
       required: true,
     },

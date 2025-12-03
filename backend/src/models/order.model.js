@@ -7,18 +7,10 @@ const orderSchema = new mongoose.Schema(
       ref: "User",
       required: true,
     },
-    items: [
-      {
-        productId: {
-          type: mongoose.Schema.Types.ObjectId,
-          ref: "Product",
-        },
-        quantity: Number,
-        required: true,
-        min: 1,
-      },
-    ],
-    totalAmount: Number,
+    totalAmount: {
+      type: Number,
+      required: true,
+    },
     paymentStatus: {
       type: String,
       enum: ["pending", "paid", "failed"],
@@ -31,8 +23,8 @@ const orderSchema = new mongoose.Schema(
     },
     paymentMethod: {
       type: String,
-      enum: ["Credit Card", "paypal", "GCash", "Cash On Delivery"],
-      default: "Cash On Delivery",
+      enum: ["credit_card", "paypal", "gcash", "cash_on_delivery"],
+      default: "cash_on_delivery",
     },
     shippingAddress: {
       type: String,
