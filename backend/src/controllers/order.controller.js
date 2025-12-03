@@ -32,7 +32,7 @@ export async function createOrder(req, res) {
         });
       }
 
-      const post = await postCollections.find(
+      const post = postCollections.find(
         (p) => p._id.toString() === item.postId
       );
 
@@ -42,7 +42,12 @@ export async function createOrder(req, res) {
           .json({ message: `Post with ID ${item.postId} not found` });
       }
 
-      const unitPrice = post.price;
+      if (post.kind !== "listing" || !post.listing?.price) {
+        return res.status(400).json({
+          message: `Post with ID ${item.postId} is not for sale`,
+        });
+      }
+      const unitPrice = post.listing.price;
       const subtotal = unitPrice * item.quantity;
       calculatedTotal += subtotal;
 
@@ -56,16 +61,14 @@ export async function createOrder(req, res) {
 
     const newOrder = new Order({
       customerId,
-      items: orderDetails.map((d) => ({
-        postId: d.postId,
-        quantity: d.quantity,
-      })),
-      orderStatus: "preparing",
+      orderStatus: "pending",
       paymentStatus: "pending",
       paymentMethod,
       shippingAddress,
       totalAmount: calculatedTotal,
     });
+
+    await newOrder.save();
 
     const orderDetailsWithId = orderDetails.map((d) => ({
       orderId: newOrder._id,
@@ -112,45 +115,48 @@ export async function updateOrderStatus(req, res) {
   try {
     const userId = req.user._id;
     const { orderId } = req.params;
-    const { orderStatus, paymentStatus } = req.body;
+    const { orderStatus } = req.body;
 
-    const order = await Order.findById(req.params.orderId);
+    const order = await Order.findById(orderId);
 
     if (!order) {
       return res.status(404).json({ message: "Order not found" });
     }
 
-    const isAuthor = order.items.some(
-      (item) => item.postId.author.toString() === userId.toString()
+    const orderDetails = await OrderDetail.find({ orderId: orderId });
+    const postIds = orderDetails.map((d) => d.postId);
+    const posts = await Post.find({ _id: { $in: postIds } });
+
+    const isAuthor = posts.some(
+      (post) => post.author.toString() === userId.toString()
     );
+
     if (!isAuthor) {
       return res
         .status(403)
         .json({ message: "You are not authorized to update this order" });
     }
 
-    const updates = {};
+    const validStatuses = ["pending", "processing", "completed", "cancelled"];
 
-    if (orderStatus !== undefined) {
-      if (!Order.orderStatuses.includes(orderStatus)) {
-        return res.status(400).json({ message: "Invalid order status" });
-      }
-      updates.orderStatus = orderStatus;
+    if (!orderStatus) {
+      return res.status(400).json({ message: "Order status is required" });
     }
 
-    if (Object.keys(updates).length === 0) {
-      return res.status(400).json({ message: "No updates provided" });
+    if (!validStatuses.includes(orderStatus)) {
+      return res.status(400).json({ message: "Invalid order status" });
     }
 
-    const result = await Order.findByIdAndUpdate(orderId, updates, {
-      new: true,
+    const updatedOrder = await Order.findByIdAndUpdate(
+      orderId,
+      { orderStatus },
+      { new: true }
+    );
+
+    res.status(200).json({
+      message: "Order status updated successfully",
+      order: updatedOrder,
     });
-
-    if (result.matchCount === 0) {
-      return res.status(404).json({ message: "Order not found" });
-    }
-
-    res.status(200).json({ message: "Order status updated successfully" });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -181,16 +187,10 @@ export async function updateOrderByCustomer(req, res) {
     );
 
     if (!order) {
-      return res.status(404).json({ message: "Order not found" });
-    }
-
-    if (order.userId.toString() !== req.user._id.toString()) {
       return res
-        .status(403)
-        .json({ message: "You are not authorized to update this order" });
+        .status(404)
+        .json({ message: "Order not found or not authorized" });
     }
-
-    const result = await Order.findById(orderId, updates, { new: true });
 
     res.status(200).json({ message: "Order updated successfully", order });
   } catch (error) {
@@ -203,26 +203,28 @@ export async function deleteOrder(req, res) {
     const userId = req.user._id;
     const { orderId } = req.params;
 
-    const order = await Order.findById(req.params.orderId);
+    const order = await Order.findById(orderId);
 
     if (!order) {
       return res.status(404).json({ message: "Order not found" });
     }
 
-    const isAuthor = order.items.some(
-      (item) => item.postId.author.toString() === userId.toString()
+    const orderDetails = await OrderDetail.find({ orderId: orderId });
+    const postIds = orderDetails.map((d) => d.postId);
+    const posts = await Post.find({ _id: { $in: postIds } });
+
+    const isAuthor = posts.some(
+      (post) => post.author.toString() === userId.toString()
     );
+
     if (!isAuthor) {
       return res
         .status(403)
         .json({ message: "You are not authorized to delete this order" });
     }
 
-    const result = await Order.findByIdAndDelete(orderId);
-
-    if (result.deletedCount === 0) {
-      return res.status(404).json({ message: "Order not found" });
-    }
+    await OrderDetail.deleteMany({ orderId: orderId });
+    await Order.findByIdAndDelete(orderId);
 
     res.status(200).json({ message: "Order deleted successfully" });
   } catch (error) {

@@ -2,6 +2,7 @@ import OrderDetail from "../models/orderDetail.model.js";
 import Order from "../models/order.model.js";
 import Post from "../models/post.model.js";
 import mongoose from "mongoose";
+
 const ObjectId = mongoose.Types.ObjectId;
 
 export async function getAllOrderDetailsByOrderId(req, res) {
@@ -51,6 +52,10 @@ export async function addOrderDetail(req, res) {
     const post = await Post.findById(postId);
     if (!post) {
       return res.status(404).json({ message: "Post not found" });
+    }
+
+    if (post.kind !== "listing" || !post.listing?.price) {
+      return res.status(400).json({ message: "This post is not for sale" });
     }
 
     const subtotal = quantity * unitPrice;
