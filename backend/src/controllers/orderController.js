@@ -20,17 +20,24 @@ export const createOrder = async (req, res) => {
 
     let totalAmount = 0;
 
-    const validatedItems = items.map((item) => {
-      const subtotal = item.price * item.quantity;
-      totalAmount += subtotal;
+    const validatedItems = await Promise.all(
+      items.map(async (item) => {
+        const post = await Post.findById(item.postId); // 👈 Changed from productId
+        if (!post) {
+          throw new Error(`Post with ID ${item.postId} not found`);
+        }
 
-      return {
-        productId: item.productId,
-        quantity: item.quantity,
-        price: item.price,
-      };
-    });
+        const price = post.price; // 👈 Get price from Post
+        const subtotal = price * item.quantity;
+        totalAmount += subtotal;
 
+        return {
+          postId: item.postId, // 👈 Changed from productId
+          quantity: item.quantity,
+          price: price,
+        };
+      })
+    );
     const newOrder = new Order({
       customerId,
       items: validatedItems,
@@ -51,7 +58,7 @@ export const getAllOrders = async (req, res) => {
   try {
     const orders = await Order.find()
       .populate("customerId", "fullName email")
-      .sort({ createdAt: -1 });
+      .populate("items.postId", "productName price media");
 
     res.status(200).json(orders);
   } catch (error) {
@@ -59,6 +66,7 @@ export const getAllOrders = async (req, res) => {
   }
 };
 
+//get order by id
 export const getOrderById = async (req, res) => {
   try {
     const order = await Order.findById(req.params.id).populate(
@@ -85,5 +93,30 @@ export const updateOrderStatus = async (req, res) => {
       { orderStatus },
       { new: true }
     );
-  } catch (error) {}
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+export const cancelOrder = async (req, res) => {
+  try {
+    const order = await Order.findById(req.params.id);
+
+    if (!order) {
+      return res.status(404).json({ message: "Order not found" });
+    }
+
+    if (order.orderStatus !== "preparing") {
+      return res
+        .status(400)
+        .json({ message: "Can only cancel orders that are preparing" });
+    }
+
+    order.orderStatus = "cancelled";
+    await order.save();
+
+    res.status(200).json({ message: "Order cancelled", order });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
 };
