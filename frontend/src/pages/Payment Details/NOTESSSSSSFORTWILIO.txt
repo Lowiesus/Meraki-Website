@@ -1,0 +1,19 @@
+NOTES:
+
+To use Twilio, Sign up for Twilio in:
+https://www.twilio.com/try-twilio
+
+Verify your phone and Save the recovery Code!
+
+Select New Verify Service
+
+In code, (default is MacOS/Lunix) change it into Node.js
+then copy the code and paste it under Twilio Credentials
+
+U can try it using your phone number, note that only verified number is accepted
+
+Then click next on bottom right to go to confiuguration
+
+then add the name.
+
+Note lang na di ko toh magawa since need toh backend ren :3
