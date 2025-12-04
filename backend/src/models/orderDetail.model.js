@@ -7,9 +7,9 @@ const orderDetailSchema = new mongoose.Schema(
       ref: "Order",
       required: true,
     },
-    productId: {
+    postId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Product",
+      ref: "Post",
       required: true,
     },
     quantity: {

@@ -89,7 +89,10 @@ export async function createOrder(req, res) {
 
 export async function getAllOrders(req, res) {
   try {
-    const orders = await Order.find({ customerId: req.user._id });
+    const orders = await Order.find({ customerId: req.user._id }).populate(
+      "customerId",
+      "fullName username profilePic"
+    );
 
     res.status(200).json(orders);
   } catch (error) {

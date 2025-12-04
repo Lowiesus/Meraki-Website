@@ -18,7 +18,14 @@ export async function getAllOrderDetailsByOrderId(req, res) {
       return res.status(404).json({ message: "Order not found" });
     }
 
-    const orderDetails = await OrderDetail.find({ orderId: orderId });
+    const orderDetails = await OrderDetail.find({ orderId: orderId }).populate({
+      path: "postId",
+      select: "listing media kind author",
+      populate: {
+        path: "author",
+        select: "fullName username profilePic",
+      },
+    });
     res.status(200).json(orderDetails);
   } catch (error) {
     res.status(500).json({ message: error.message });
