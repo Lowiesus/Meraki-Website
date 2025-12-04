@@ -7,6 +7,8 @@ import SettingsPage from "./pages/SettingsPage";
 import ProfilePage from "./pages/ProfilePage";
 import ShoppingCart from "./pages/Shopping Cart/ShoppingCart";
 import Checkout from "./pages/Checkout";
+import CompletedTab from "./pages/Shopping Cart/CompletedTab";
+
 
 import { Routes, Route, Navigate } from "react-router-dom";
 import { useAuthStore } from "./store/useAuthStore";
@@ -65,6 +67,11 @@ const App = () => {
           path="/checkout"
           element={authUser ? <Checkout /> : <Navigate to="/login" />}
         />
+        <Route path="/profile" element={authUser ? <ProfilePage /> : <Navigate to="/login" />} />
+        <Route path="/cart" element={<ShoppingCart />} />
+        <Route path="/payments" element={<CompletedTab />} />
+
+
       </Routes>
 
       <Toaster />

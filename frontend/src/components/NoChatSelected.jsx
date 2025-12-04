@@ -1,4 +1,6 @@
 import { MessageSquare } from "lucide-react";
+import penguIcon from "/LOGO_ICON.png";
+
 
 const NoChatSelected = () => {
   return (
@@ -8,10 +10,10 @@ const NoChatSelected = () => {
         <div className="flex justify-center gap-4 mb-4">
           <div className="relative">
             <div
-              className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center
+              className="w-16 h-16 rounded-2xl flex items-center
             justify-center animate-bounce"
             >
-              <MessageSquare className="w-8 h-8 text-primary " />
+              <img src={penguIcon} alt="Pengu Icon" className="w-17 h-17" />
             </div>
           </div>
         </div>
