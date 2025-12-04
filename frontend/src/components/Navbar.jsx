@@ -13,14 +13,14 @@ import {
 import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuthStore } from "../store/useAuthStore";
-import CreatePostModal from "./CreatePostModal";
+import CreateChoiceModal from "./CreateChoiceModal";
 import logoSrc from "/header logo.png";
 
 const Navbar = ({ onOpenMessages }) => {
   const { logout, authUser } = useAuthStore();
   const navigate = useNavigate();
   const [moreOpen, setMoreOpen] = useState(false);
-  const [createOpen, setCreateOpen] = useState(false);
+  const [choiceOpen, setChoiceOpen] = useState(false);
   const moreRef = useRef(null);
 
   useEffect(() => {
@@ -38,7 +38,7 @@ const Navbar = ({ onOpenMessages }) => {
 
   return (
     <>
-      {createOpen && <CreatePostModal onClose={() => setCreateOpen(false)} />}
+      {choiceOpen && <CreateChoiceModal onClose={() => setChoiceOpen(false)} />}
     
     <aside className="fixed left-0 top-0 bottom-0 w-20 lg:w-72 bg-base-100 border-r border-base-300 z-40 flex flex-col">
       <div className="p-4 flex items-center justify-center lg:justify-start">
@@ -80,7 +80,7 @@ const Navbar = ({ onOpenMessages }) => {
 
         <button
           type="button"
-          onClick={() => setCreateOpen(true)}
+          onClick={() => setChoiceOpen(true)}
           className="w-full text-left flex items-center gap-3 px-3 py-2 rounded-md hover:bg-base-200"
         >
           <PlusSquare className="w-5 h-5" />

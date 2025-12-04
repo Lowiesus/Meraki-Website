@@ -16,9 +16,9 @@ const timeAgo = (iso) => {
 };
 
 import { ChevronLeft, ChevronRight, Heart, MessageSquare, MoreHorizontal } from 'lucide-react';
-import { useMemo, useState, useEffect } from 'react';
-import { useAuthStore } from '../store/useAuthStore';
+import { useEffect, useMemo, useState } from 'react';
 import { axiosInstance } from '../lib/axios';
+import { useAuthStore } from '../store/useAuthStore';
 
 const PostCard = ({ post }) => {
   const { author, caption, media, createdAt, likes } = post || {};
@@ -41,13 +41,65 @@ const PostCard = ({ post }) => {
   const [commentText, setCommentText] = useState("");
   const [posting, setPosting] = useState(false);
 
+  const priceValue = post?.listing?.price;
+  const formattedPrice = priceValue != null && !Number.isNaN(Number(priceValue))
+    ? new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(Number(priceValue))
+    : null;
+
+  const titleValue = post?.listing?.name;
+  const formattedTitle = titleValue && String(titleValue).trim() ? String(titleValue).trim() : null;
+
   const toggleLike = () => {
-    if (liked) {
+    // optimistic UI
+    const pid = post?._id || post?.id;
+    if (!pid) return;
+
+    const previousLiked = liked;
+    const previousCount = likesCount;
+
+    if (previousLiked) {
       setLiked(false);
       setLikesCount((c) => Math.max(0, c - 1));
     } else {
       setLiked(true);
       setLikesCount((c) => c + 1);
+    }
+
+    (async () => {
+      try {
+        await axiosInstance.post(`/posts/${pid}/like`);
+      } catch (err) {
+        // revert on error
+        setLiked(previousLiked);
+        setLikesCount(previousCount);
+        try {
+          const toast = (await import('react-hot-toast')).default;
+          toast.error(err?.response?.data?.message || 'Failed to update like');
+        } catch (e) {}
+      }
+    })();
+  };
+
+  const handleBuy = async (e) => {
+    e.stopPropagation();
+    if (!authUser) {
+      // you might want to open login modal; for now show toast
+      try {
+        const toast = (await import('react-hot-toast')).default;
+        toast.error('Please sign in to buy items');
+      } catch (err) {}
+      return;
+    }
+
+    const pid = post?._id || post?.id;
+    if (!pid) return;
+    try {
+      await axiosInstance.post('/cart', { postId: pid, quantity: 1 });
+      const toast = (await import('react-hot-toast')).default;
+      toast.success('Added to cart');
+    } catch (err) {
+      const toast = (await import('react-hot-toast')).default;
+      toast.error(err?.response?.data?.message || 'Failed to add to cart');
     }
   };
 
@@ -136,18 +188,33 @@ const PostCard = ({ post }) => {
         )}
       </div>
 
-      <div className="p-4">
+        <div className="p-4">
         <div className="flex items-center gap-4 mb-3">
           <button onClick={toggleLike} className="flex items-center gap-2">
             <Heart className={`w-5 h-5 ${liked ? 'text-red-500' : 'text-zinc-600'}`} />
             <span className="text-sm font-medium">{likesCount.toLocaleString()}</span>
           </button>
 
-          <div className="flex items-center gap-2 text-zinc-500">
-            <MessageSquare className="w-5 h-5" />
-            <span className="text-sm">{commentsCount !== null ? commentsCount.toLocaleString() : '—'}</span>
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 text-zinc-500">
+              <MessageSquare className="w-5 h-5" />
+              <span className="text-sm">{commentsCount !== null ? commentsCount.toLocaleString() : '—'}</span>
+            </div>
+
+            {post?.kind === 'listing' && (
+              <div className="flex items-center gap-2">
+                {formattedPrice && <div className="text-sm font-semibold text-zinc-800">{formattedPrice}</div>}
+                <button type="button" onClick={handleBuy} className="btn btn-sm btn-primary">
+                  Buy
+                </button>
+              </div>
+            )}
           </div>
         </div>
+
+        {formattedTitle && (
+          <div className="text-base font-semibold text-zinc-900 mb-1">{formattedTitle}</div>
+        )}
 
         <p className="text-sm text-zinc-800 mb-3">{caption}</p>
 

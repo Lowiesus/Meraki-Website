@@ -1,5 +1,5 @@
 import express from "express";
-import { createPost, getPosts, getComments, addComment } from "../controllers/post.controller.js";
+import { addComment, createPost, getComments, getPosts, toggleLike } from "../controllers/post.controller.js";
 import { protectRoute } from "../middleware/auth.middleware.js";
 
 const router = express.Router();
@@ -10,6 +10,9 @@ router.get("/", getPosts);
 // Comments for a post
 router.get("/:id/comments", getComments);
 router.post("/:id/comments", protectRoute, addComment);
+
+// Like/unlike a post
+router.post("/:id/like", protectRoute, toggleLike);
 
 // Create post (authenticated)
 router.post("/", protectRoute, createPost);
