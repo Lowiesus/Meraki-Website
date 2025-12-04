@@ -1,6 +1,35 @@
 To access Meraki-Website 
 
-1. Users must first use npm install in both the backend folder and the frontend folder to install all dependencies and imports
-2. Once npm is installed, use npm run dev in both the backend and frontend folders.
-3. Once the node and Vite React have started, redirect to the local host.
-4. To Access the landing page of the website, Users must first create an account with their full name, email, and password. 
+
+1. Install Dependencies
+
+Run this command in both the backend and frontend folders:
+
+npm install
+
+
+2. Start the Development Servers
+
+Start each server by running:
+
+npm run dev
+
+--> Run this in the backend folder
+
+--> Run this again in the frontend folder
+
+
+
+
+3. Open the Application
+
+After both servers are running, open the local development URL (usually): http://localhost:5173/
+
+
+4. Accessing the Landing Page
+
+To use the website:
+
+--> Create an account by entering your full name, email, and password.
+
+--> After registering, you will be redirected to the website’s landing page.
