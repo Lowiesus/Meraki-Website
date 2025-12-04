@@ -6,6 +6,7 @@ import LoginPage from "./pages/LoginPage";
 import SettingsPage from "./pages/SettingsPage";
 import ProfilePage from "./pages/ProfilePage";
 import ShoppingCart from "./pages/Shopping Cart/ShoppingCart";
+import CompletedTab from "./pages/Shopping Cart/CompletedTab";
 
 
 import { Routes, Route, Navigate } from "react-router-dom";
@@ -46,6 +47,8 @@ const App = () => {
         <Route path="/settings" element={<SettingsPage />} />
         <Route path="/profile" element={authUser ? <ProfilePage /> : <Navigate to="/login" />} />
         <Route path="/cart" element={<ShoppingCart />} />
+        <Route path="/payments" element={<CompletedTab />} />
+
 
       </Routes>
 
