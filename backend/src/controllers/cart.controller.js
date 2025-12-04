@@ -7,7 +7,10 @@ export const getCart = async (req, res) => {
     const userId = req.user && (req.user._id || req.user.id);
     if (!userId) return res.status(401).json({ message: "Unauthorized" });
 
-    let cart = await Cart.findOne({ user: userId }).populate("items.post", "listing media listing.name listing.price kind");
+    let cart = await Cart.findOne({ user: userId }).populate(
+      "items.post",
+      "listing media kind"
+    );
     if (!cart) {
       cart = new Cart({ user: userId, items: [] });
       await cart.save();
@@ -31,7 +34,8 @@ export const addToCart = async (req, res) => {
 
     const post = await Post.findById(postId);
     if (!post) return res.status(404).json({ message: "Post not found" });
-    if (post.kind !== "listing") return res.status(400).json({ message: "Post is not a listing" });
+    if (post.kind !== "listing")
+      return res.status(400).json({ message: "Post is not a listing" });
 
     const listingSnapshot = {
       name: post.listing?.name || "",
@@ -44,21 +48,35 @@ export const addToCart = async (req, res) => {
       cart = new Cart({ user: userId, items: [] });
     }
 
-    const existingIndex = cart.items.findIndex((it) => String(it.post) === String(postId));
+    const existingIndex = cart.items.findIndex(
+      (it) => String(it.post) === String(postId)
+    );
     if (existingIndex >= 0) {
-      cart.items[existingIndex].quantity = Math.max(1, cart.items[existingIndex].quantity + Number(quantity));
+      cart.items[existingIndex].quantity = Math.max(
+        1,
+        cart.items[existingIndex].quantity + Number(quantity)
+      );
     } else {
-      cart.items.unshift({ post: postId, quantity: Number(quantity) || 1, listingSnapshot });
+      cart.items.unshift({
+        post: postId,
+        quantity: Number(quantity) || 1,
+        listingSnapshot,
+      });
     }
 
     await cart.save();
 
-    const populated = await Cart.findById(cart._id).populate("items.post", "listing media listing.name listing.price kind");
+    const populated = await Cart.findById(cart._id).populate(
+      "items.post",
+      "listing media kind"
+    );
 
     return res.status(200).json(populated);
   } catch (err) {
-    console.error("Error in addToCart:", err.message || err);
-    return res.status(500).json({ message: "Internal server error" });
+    console.error("Error in addToCart:", err);
+    return res
+      .status(500)
+      .json({ message: err.message || "Internal server error" });
   }
 };
 
@@ -77,7 +95,10 @@ export const removeFromCart = async (req, res) => {
     cart.items = cart.items.filter((it) => String(it.post) !== String(postId));
     await cart.save();
 
-    const populated = await Cart.findById(cart._id).populate("items.post", "listing media listing.name listing.price kind");
+    const populated = await Cart.findById(cart._id).populate(
+      "items.post",
+      "listing media kind"
+    );
     return res.status(200).json(populated);
   } catch (err) {
     console.error("Error in removeFromCart:", err.message || err);

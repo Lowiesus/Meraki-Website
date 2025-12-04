@@ -6,6 +6,7 @@ import LoginPage from "./pages/LoginPage";
 import SettingsPage from "./pages/SettingsPage";
 import ProfilePage from "./pages/ProfilePage";
 import ShoppingCart from "./pages/Shopping Cart/ShoppingCart";
+import Checkout from "./pages/Checkout";
 import CompletedTab from "./pages/Shopping Cart/CompletedTab";
 
 
@@ -41,10 +42,31 @@ const App = () => {
       <Navbar />
 
       <Routes>
-        <Route path="/" element={authUser ? <HomePage /> : <Navigate to="/login" />} />
-        <Route path="/signup" element={!authUser ? <SignUpPage /> : <Navigate to="/" />} />
-        <Route path="/login" element={!authUser ? <LoginPage /> : <Navigate to="/" />} />
+        <Route
+          path="/"
+          element={authUser ? <HomePage /> : <Navigate to="/login" />}
+        />
+        <Route
+          path="/signup"
+          element={!authUser ? <SignUpPage /> : <Navigate to="/" />}
+        />
+        <Route
+          path="/login"
+          element={!authUser ? <LoginPage /> : <Navigate to="/" />}
+        />
         <Route path="/settings" element={<SettingsPage />} />
+        <Route
+          path="/profile"
+          element={authUser ? <ProfilePage /> : <Navigate to="/login" />}
+        />
+        <Route
+          path="/cart"
+          element={authUser ? <ShoppingCart /> : <Navigate to="/login" />}
+        />
+        <Route
+          path="/checkout"
+          element={authUser ? <Checkout /> : <Navigate to="/login" />}
+        />
         <Route path="/profile" element={authUser ? <ProfilePage /> : <Navigate to="/login" />} />
         <Route path="/cart" element={<ShoppingCart />} />
         <Route path="/payments" element={<CompletedTab />} />

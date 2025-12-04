@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from "react";
 import cartPanel from "/Cart_Panel.png";
+import { axiosInstance } from "../../lib/axios";
+import toast from "react-hot-toast";
 
 const mockProgressHistory = {
   1: [
@@ -57,50 +59,28 @@ const mockProgressHistory = {
 };
 
 const statusColors = {
-  ONGOING: "#0080FF",
-  "AWAITING PAYMENT": "#FFC300",
-  "REQUEST SENT": "#0080FF",
+  pending: "#FFC300",
+  processing: "#0080FF",
+  completed: "#4CC790",
+  cancelled: "#FF0000",
+  PENDING: "#FFC300",
+  PROCESSING: "#0080FF",
+  COMPLETED: "#4CC790",
   CANCELLED: "#FF0000",
+  "AWAITING PAYMENT": "#FFC300",
+  ONGOING: "#0080FF",
 };
 
-const dummyCommissions = [
-  {
-    id: 1,
-    sellerUsername: "seller01",
-    title: "Pre-Made VTuber Models",
-    type: "3D Modeling with Rigging",
-    status: "ONGOING",
-    price: 180000,
-    orderNo: "1532425135321",
-  },
-  {
-    id: 2,
-    sellerUsername: "seller02",
-    title: "Digital Anime Illustration",
-    type: "Digital Anime Illustration",
-    status: "AWAITING PAYMENT",
-    price: 1000,
-    orderNo: "1532425135322",
-  },
-  {
-    id: 3,
-    sellerUsername: "seller03",
-    title: "Website Design",
-    type: "Website Design",
-    status: "REQUEST SENT",
-    price: 10000,
-    orderNo: "1532425135323",
-  },
-  {
-    id: 4,
-    sellerUsername: "seller04",
-    title: "Anime Illustration",
-    type: "Anime Illustration",
-    status: "CANCELLED",
-    price: 500,
-    orderNo: "1532425135324",
-  },
-];
+// Map backend status to display status
+const getDisplayStatus = (status) => {
+  const statusMap = {
+    pending: "AWAITING PAYMENT",
+    processing: "ONGOING",
+    completed: "COMPLETED",
+    cancelled: "CANCELLED",
+  };
+  return statusMap[status] || status?.toUpperCase() || "PENDING";
+};
 
 function OrderDetails({ order }) {
   const [expanded, setExpanded] = useState(false);
@@ -164,10 +144,12 @@ function OrderDetails({ order }) {
         >
           <div style={{ fontWeight: 700, color: "#0f3a6a" }}>COMMISSIONER:</div>
           <div style={{ color: "#0b66b2", fontWeight: 700 }}>
-            CLIENT_USERNAME
+            {order.customerFullName || order.customerUsername || "Customer"}
           </div>
           <div style={{ color: "#94a3b8" }}>|</div>
-          <div style={{ color: "#94a3b8" }}>@username</div>
+          <div style={{ color: "#94a3b8" }}>
+            @{order.customerUsername || "customer"}
+          </div>
 
           <div style={{ marginLeft: "auto", display: "flex", gap: 8 }}>
             <button
@@ -315,11 +297,73 @@ export default function ShoppingCart() {
   const [activeTab, setActiveTab] = useState("card");
   const [flowStep, setFlowStep] = useState("form");
 
-  useEffect(() => {
-    setTimeout(() => {
-      setCommissions(dummyCommissions);
+  // Fetch orders from backend
+  const fetchOrders = async () => {
+    try {
+      setLoading(true);
+      const res = await axiosInstance.get("/orders");
+      const orders = res.data;
+
+      // Fetch order details for each order to get item info
+      const ordersWithDetails = await Promise.all(
+        orders.map(async (order) => {
+          try {
+            const detailsRes = await axiosInstance.get(
+              `/order-details/${order._id}`
+            );
+            const details = detailsRes.data;
+            const firstItem = details[0];
+            return {
+              id: order._id,
+              orderNo: order._id.slice(-12),
+              sellerUsername: firstItem?.postId?.author?.username || "seller",
+              sellerFullName: firstItem?.postId?.author?.fullName || "Seller",
+              sellerProfilePic: firstItem?.postId?.author?.profilePic || null,
+              customerUsername: order.customerId?.username || "customer",
+              customerFullName: order.customerId?.fullName || "Customer",
+              title: firstItem?.postId?.listing?.name || "Order",
+              type: firstItem?.postId?.listing?.type || "Product",
+              image: firstItem?.postId?.media?.[0] || null,
+              status: getDisplayStatus(order.orderStatus),
+              price: order.totalAmount,
+              paymentStatus: order.paymentStatus,
+              orderStatus: order.orderStatus,
+              rawOrder: order,
+              details: details,
+            };
+          } catch (err) {
+            return {
+              id: order._id,
+              orderNo: order._id.slice(-12),
+              sellerUsername: "seller",
+              sellerFullName: "Seller",
+              sellerProfilePic: null,
+              customerUsername: order.customerId?.username || "customer",
+              customerFullName: order.customerId?.fullName || "Customer",
+              title: "Order",
+              type: "Product",
+              image: null,
+              status: getDisplayStatus(order.orderStatus),
+              price: order.totalAmount,
+              paymentStatus: order.paymentStatus,
+              orderStatus: order.orderStatus,
+              rawOrder: order,
+              details: [],
+            };
+          }
+        })
+      );
+      setCommissions(ordersWithDetails);
+    } catch (error) {
+      console.error("Failed to fetch orders:", error);
+      toast.error("Failed to load orders");
+    } finally {
       setLoading(false);
-    }, 500);
+    }
+  };
+
+  useEffect(() => {
+    fetchOrders();
   }, []);
 
   const handleCheck = (id, checked) => {
@@ -336,18 +380,66 @@ export default function ShoppingCart() {
     .filter((c) => checkedIds.includes(c.id))
     .reduce((s, c) => s + (c.price || 0), 0);
 
-  function handlePaymentSubmit(e) {
+  const [shippingAddress, setShippingAddress] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  async function handlePaymentSubmit(e, formData = {}) {
     e.preventDefault();
-    if (activeTab === "cod") {
-      setFlowStep("checkoutSuccess");
-    } else if (activeTab === "card") {
-      setFlowStep("otp");
-    } else if (activeTab === "dragonpay") {
-      setFlowStep("success");
+
+    if (checkedIds.length === 0) {
+      toast.error("Please select at least one order to pay");
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      for (const orderId of checkedIds) {
+        const paymentMethod =
+          activeTab === "cod"
+            ? "cash_on_delivery"
+            : activeTab === "card"
+            ? "credit_card"
+            : "gcash";
+
+        await axiosInstance.patch(`/orders/${orderId}/customer`, {
+          paymentMethod,
+          shippingAddress: formData.address || shippingAddress || "N/A",
+        });
+      }
+
+      if (activeTab === "cod") {
+        toast.success("Order confirmed! Pay on delivery.");
+        setFlowStep("checkoutSuccess");
+      } else if (activeTab === "card") {
+        setFlowStep("otp");
+      } else if (activeTab === "dragonpay") {
+        setFlowStep("success");
+      }
+    } catch (error) {
+      console.error("Payment error:", error);
+      toast.error(error.response?.data?.message || "Payment failed");
+    } finally {
+      setIsSubmitting(false);
     }
   }
+
+  async function handleCancelOrder(orderId) {
+    try {
+      await axiosInstance.patch(`/orders/${orderId}/customer`, {
+        orderStatus: "cancelled",
+      });
+      toast.success("Order cancelled");
+      fetchOrders();
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Failed to cancel order");
+    }
+  }
+
   function handleOtpSuccess() {
+    toast.success("Payment successful!");
     setFlowStep("success");
+    fetchOrders();
   }
   function handleDragonpayContinue() {
     setFlowStep("dragonpay");
@@ -356,6 +448,7 @@ export default function ShoppingCart() {
     setFlowStep("form");
     setActiveTab("card");
     setCheckedIds([]);
+    fetchOrders();
   }
 
   return (
@@ -458,7 +551,26 @@ export default function ShoppingCart() {
             style={{ margin: "0 4px", maxWidth: "100%", overflow: "hidden" }}
           >
             {loading ? (
-              <div>Loading...</div>
+              <div
+                style={{
+                  textAlign: "center",
+                  padding: "40px",
+                  color: "#94a3b8",
+                }}
+              >
+                Loading orders...
+              </div>
+            ) : commissions.length === 0 ? (
+              <div
+                style={{
+                  textAlign: "center",
+                  padding: "40px",
+                  color: "#94a3b8",
+                }}
+              >
+                <p style={{ fontSize: 16, marginBottom: 8 }}>No orders yet</p>
+                <p style={{ fontSize: 14 }}>Your orders will appear here</p>
+              </div>
             ) : (
               commissions.map((c) => (
                 <div
@@ -490,7 +602,8 @@ export default function ShoppingCart() {
                     <div
                       style={{ display: "flex", alignItems: "center", gap: 14 }}
                     >
-                      {c.status === "AWAITING PAYMENT" ? (
+                      {c.status === "AWAITING PAYMENT" ||
+                      c.paymentStatus === "pending" ? (
                         <input
                           type="checkbox"
                           checked={checkedIds.includes(c.id)}
@@ -511,29 +624,43 @@ export default function ShoppingCart() {
                         <div style={{ width: 22, height: 22 }} />
                       )}
 
-                      <div
-                        style={{
-                          width: 72,
-                          height: 72,
-                          borderRadius: 10,
-                          background: "#ff3b3b",
-                          display: "flex",
-                          justifyContent: "center",
-                          alignItems: "center",
-                          flexShrink: 0,
-                        }}
-                      >
-                        <span
+                      {c.image ? (
+                        <img
+                          src={c.image}
+                          alt={c.title}
                           style={{
-                            color: "#fff",
-                            fontWeight: "700",
-                            fontSize: 20,
-                            letterSpacing: 0.5,
+                            width: 72,
+                            height: 72,
+                            borderRadius: 10,
+                            objectFit: "cover",
+                            flexShrink: 0,
+                          }}
+                        />
+                      ) : (
+                        <div
+                          style={{
+                            width: 72,
+                            height: 72,
+                            borderRadius: 10,
+                            background: "#ff3b3b",
+                            display: "flex",
+                            justifyContent: "center",
+                            alignItems: "center",
+                            flexShrink: 0,
                           }}
                         >
-                          {c.sellerUsername[0].toUpperCase()}
-                        </span>
-                      </div>
+                          <span
+                            style={{
+                              color: "#fff",
+                              fontWeight: "700",
+                              fontSize: 20,
+                              letterSpacing: 0.5,
+                            }}
+                          >
+                            {c.sellerUsername?.[0]?.toUpperCase() || "?"}
+                          </span>
+                        </div>
+                      )}
 
                       <div style={{ minWidth: 0 }}>
                         <div
@@ -544,7 +671,7 @@ export default function ShoppingCart() {
                             marginBottom: 6,
                           }}
                         >
-                          USERNAME{" "}
+                          {c.sellerFullName || c.sellerUsername}{" "}
                           <span
                             style={{
                               color: "#94a3b8",
